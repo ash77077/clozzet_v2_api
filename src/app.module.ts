@@ -12,6 +12,9 @@ import { QuotesModule } from './quotes/quotes.module';
 import { ProductDetailsModule } from './product-details/product-details.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { SeedersModule } from './seeders/seeders.module';
+import { ProductsModule } from './products/products.module';
+import { OrdersModule } from './orders/orders.module';
+import { SalesPersonsModule } from './sales-persons/sales-persons.module';
 
 @Module({
   imports: [
@@ -33,6 +36,9 @@ import { SeedersModule } from './seeders/seeders.module';
     ProductDetailsModule,
     DashboardModule,
     SeedersModule,
+    ProductsModule,
+    OrdersModule,
+    SalesPersonsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

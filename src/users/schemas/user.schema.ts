@@ -3,6 +3,14 @@ import { Document, Types } from 'mongoose';
 
 export type UserDocument = User & Document;
 
+export enum UserRole {
+  SUPER_ADMIN = 'admin',
+  MANAGER = 'manager',
+  USER = 'user',
+  CUSTOMER = 'customer',
+  BUSINESS_USER = 'business_user',
+}
+
 @Schema({ timestamps: true })
 export class User {
   @Prop({ required: true, unique: true, lowercase: true })

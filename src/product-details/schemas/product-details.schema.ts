@@ -44,9 +44,6 @@ export class ProductDetails {
   @Prop({ required: true, type: Object })
   sizeQuantities: { [size: string]: number };
 
-  @Prop({ required: true })
-  printingMethod: string;
-
   @Prop()
   logoPosition?: string;
 
@@ -61,9 +58,6 @@ export class ProductDetails {
 
   @Prop({ type: [String] })
   referenceImages?: string[];
-
-  @Prop()
-  pantoneColors?: string;
 
   @Prop()
   neckStyle?: string;

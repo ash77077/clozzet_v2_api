@@ -87,7 +87,7 @@ export class CreateProductDetailsDto {
 
   @ApiProperty({
     description: 'Custom color details if custom color selected',
-    example: 'Pantone 186 C - Red',
+    example: 'Crimson Red',
     required: false,
   })
   @IsOptional()
@@ -157,15 +157,6 @@ export class CreateProductDetailsDto {
   @IsArray()
   @IsString({ each: true })
   referenceImages?: string[];
-
-  @ApiProperty({
-    description: 'Pantone colors',
-    example: 'Pantone 286 C, Pantone 485 C',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  pantoneColors?: string;
 
   // T-Shirt Specific (optional)
   @ApiProperty({ required: false })

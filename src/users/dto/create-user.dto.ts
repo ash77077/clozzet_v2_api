@@ -46,6 +46,30 @@ export class CreateUserDto {
   phone: string;
 
   @ApiPropertyOptional({
+    description: 'User job title',
+    example: 'Sales Manager',
+  })
+  @IsString()
+  @IsOptional()
+  jobTitle?: string;
+
+  @ApiPropertyOptional({
+    description: 'User department',
+    example: 'Sales',
+  })
+  @IsString()
+  @IsOptional()
+  department?: string;
+
+  @ApiPropertyOptional({
+    description: 'Employee ID',
+    example: 'EMP001',
+  })
+  @IsString()
+  @IsOptional()
+  employeeId?: string;
+
+  @ApiPropertyOptional({
     description: 'User role',
     enum: Role,
     example: Role.BUSINESS_USER,

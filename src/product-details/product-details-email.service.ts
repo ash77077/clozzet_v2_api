@@ -217,12 +217,6 @@ export class ProductDetailsEmailService {
                             </div>
                         </div>
                         ` : ''}
-                        ${data.pantoneColors ? `
-                        <div class="detail-item">
-                            <div class="detail-label">Pantone Colors</div>
-                            <div class="detail-value">${data.pantoneColors}</div>
-                        </div>
-                        ` : ''}
                     </div>
                 </div>
 

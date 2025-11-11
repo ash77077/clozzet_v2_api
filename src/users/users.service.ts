@@ -1,40 +1,40 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User } from './schemas/user.schema';
+import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<UserDocument> {
     const createdUser = new this.userModel(createUserDto);
     return createdUser.save();
   }
 
-  async findByEmail(email: string): Promise<User | null> {
+  async findByEmail(email: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ email }).populate('company').exec();
   }
 
-  async findById(id: string): Promise<User | null> {
+  async findById(id: string): Promise<UserDocument | null> {
     return this.userModel.findById(id).populate('company').exec();
   }
 
-  async findAll(): Promise<User[]> {
+  async findAll(): Promise<UserDocument[]> {
     return this.userModel.find().populate('company').exec();
   }
 
-  async update(id: string, updateUserDto: Partial<CreateUserDto>): Promise<User> {
+  async update(id: string, updateUserDto: Partial<CreateUserDto>): Promise<UserDocument> {
     const updatedUser = await this.userModel
       .findByIdAndUpdate(id, updateUserDto, { new: true })
       .populate('company')
       .exec();
-    
+
     if (!updatedUser) {
       throw new NotFoundException('User not found');
     }
-    
+
     return updatedUser;
   }
 
@@ -45,11 +45,11 @@ export class UsersService {
     }
   }
 
-  async deactivate(id: string): Promise<User> {
+  async deactivate(id: string): Promise<UserDocument> {
     return this.update(id, { isActive: false });
   }
 
-  async activate(id: string): Promise<User> {
+  async activate(id: string): Promise<UserDocument> {
     return this.update(id, { isActive: true });
   }
 }
