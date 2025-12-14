@@ -15,6 +15,7 @@ import { SeedersModule } from './seeders/seeders.module';
 import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
 import { SalesPersonsModule } from './sales-persons/sales-persons.module';
+import { RetailProductsModule } from './retail-products/retail-products.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { SalesPersonsModule } from './sales-persons/sales-persons.module';
     ProductsModule,
     OrdersModule,
     SalesPersonsModule,
+    RetailProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
