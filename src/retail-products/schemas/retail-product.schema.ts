@@ -43,6 +43,9 @@ export class RetailProduct extends Document {
   @Prop({ required: true })
   price: number;
 
+  @Prop({ required: false, default: 0 })
+  costPrice: number;
+
   @Prop({ required: true })
   category: string;
 

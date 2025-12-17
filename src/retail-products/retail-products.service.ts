@@ -23,6 +23,7 @@ export class RetailProductsService {
 
     const product = new this.retailProductModel({
       ...createRetailProductDto,
+      costPrice: createRetailProductDto.costPrice || 0,
       variants,
       salesHistory: [],
     });
@@ -180,6 +181,116 @@ export class RetailProductsService {
 
     // Mark the variants array as modified so Mongoose saves the changes
     product.markModified('variants');
+
+    return product.save();
+  }
+
+  // Get all sales history across all products
+  async getAllSales() {
+    const products = await this.retailProductModel.find().exec();
+
+    const allSales: Array<{
+      saleId: any;
+      productId: any;
+      productName: string;
+      category: string;
+      size: string;
+      color: string;
+      quantity: number;
+      soldPrice: number;
+      soldDate: Date;
+    }> = [];
+
+    for (const product of products) {
+      if (product.salesHistory && product.salesHistory.length > 0) {
+        for (const sale of product.salesHistory) {
+          allSales.push({
+            saleId: (sale as any)._id,
+            productId: product._id,
+            productName: product.name,
+            category: product.category,
+            size: sale.size,
+            color: sale.color,
+            quantity: sale.quantity,
+            soldPrice: sale.soldPrice,
+            soldDate: sale.soldDate,
+          });
+        }
+      }
+    }
+
+    // Sort by date descending (newest first)
+    allSales.sort((a, b) => new Date(b.soldDate).getTime() - new Date(a.soldDate).getTime());
+
+    return allSales;
+  }
+
+  // Return/undo a sale
+  async returnSale(productId: string, saleId: string): Promise<RetailProduct> {
+    const product = await this.findOne(productId);
+
+    // Find the sale in salesHistory
+    const saleIndex = product.salesHistory.findIndex(
+      sale => (sale as any)._id.toString() === saleId
+    );
+
+    if (saleIndex === -1) {
+      throw new NotFoundException(`Sale with id ${saleId} not found`);
+    }
+
+    const sale = product.salesHistory[saleIndex];
+
+    // Find the variant
+    const variant = product.variants.find(
+      v => v.size === sale.size && v.color === sale.color
+    );
+
+    if (!variant) {
+      throw new NotFoundException(
+        `Variant ${sale.color} ${sale.size} not found in this product`
+      );
+    }
+
+    // Check if we can return (can't exceed soldQuantity)
+    if (variant.soldQuantity < sale.quantity) {
+      throw new BadRequestException(
+        `Cannot return more than sold quantity. Sold: ${variant.soldQuantity}, Sale quantity: ${sale.quantity}`
+      );
+    }
+
+    // Decrease sold quantity
+    variant.soldQuantity -= sale.quantity;
+
+    // Remove the sale from history
+    product.salesHistory.splice(saleIndex, 1);
+
+    product.markModified('variants');
+    product.markModified('salesHistory');
+
+    return product.save();
+  }
+
+  // Update sold price of a sale
+  async updateSalePrice(
+    productId: string,
+    saleId: string,
+    newPrice: number
+  ): Promise<RetailProduct> {
+    const product = await this.findOne(productId);
+
+    // Find the sale in salesHistory
+    const sale = product.salesHistory.find(
+      s => (s as any)._id.toString() === saleId
+    );
+
+    if (!sale) {
+      throw new NotFoundException(`Sale with id ${saleId} not found`);
+    }
+
+    // Update the sold price
+    sale.soldPrice = newPrice;
+
+    product.markModified('salesHistory');
 
     return product.save();
   }
