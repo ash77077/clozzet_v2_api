@@ -24,6 +24,11 @@ export class CreateRetailProductDto {
   @Min(0)
   price: number;
 
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  costPrice?: number;
+
   @IsString()
   category: string;
 

@@ -53,6 +53,11 @@ export class RetailProductsController {
     return this.retailProductsService.findSold();
   }
 
+  @Get('sales/all')
+  getAllSales() {
+    return this.retailProductsService.getAllSales();
+  }
+
   @Post('upload-image')
   @UseInterceptors(FileInterceptor('image', retailProductImageConfig))
   async uploadImage(@UploadedFile() file: Express.Multer.File): Promise<{
@@ -171,6 +176,23 @@ export class RetailProductsController {
     @Query('quantity') quantity: number,
   ) {
     return this.retailProductsService.restockVariant(id, size, color, quantity);
+  }
+
+  @Post(':productId/return-sale/:saleId')
+  returnSale(
+    @Param('productId') productId: string,
+    @Param('saleId') saleId: string,
+  ) {
+    return this.retailProductsService.returnSale(productId, saleId);
+  }
+
+  @Patch(':productId/update-sale-price/:saleId')
+  updateSalePrice(
+    @Param('productId') productId: string,
+    @Param('saleId') saleId: string,
+    @Body('newPrice') newPrice: number,
+  ) {
+    return this.retailProductsService.updateSalePrice(productId, saleId, newPrice);
   }
 
   @Delete(':id')
