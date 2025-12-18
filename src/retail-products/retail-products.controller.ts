@@ -20,6 +20,7 @@ import { RetailProductsService } from './retail-products.service';
 import { CreateRetailProductDto } from './dto/create-retail-product.dto';
 import { UpdateRetailProductDto } from './dto/update-retail-product.dto';
 import { SellVariantDto } from './dto/sell-variant.dto';
+import { QuickSellDto } from './dto/quick-sell.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles, Role } from '../common/decorators/roles.decorator';
@@ -36,6 +37,11 @@ export class RetailProductsController {
   @Post()
   create(@Body() createRetailProductDto: CreateRetailProductDto) {
     return this.retailProductsService.create(createRetailProductDto);
+  }
+
+  @Post('quick-sell')
+  quickSell(@Body() quickSellDto: QuickSellDto) {
+    return this.retailProductsService.quickSell(quickSellDto);
   }
 
   @Get()
@@ -166,6 +172,11 @@ export class RetailProductsController {
   @Post(':id/sell-variant')
   sellVariant(@Param('id') id: string, @Body() sellVariantDto: SellVariantDto) {
     return this.retailProductsService.sellVariant(id, sellVariantDto);
+  }
+
+  @Post(':id/external-sale')
+  recordExternalSale(@Param('id') id: string, @Body() sellVariantDto: SellVariantDto) {
+    return this.retailProductsService.recordExternalSale(id, sellVariantDto);
   }
 
   @Post(':id/restock-variant')

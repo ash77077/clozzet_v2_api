@@ -5,6 +5,7 @@ import { RetailProduct } from './schemas/retail-product.schema';
 import { CreateRetailProductDto } from './dto/create-retail-product.dto';
 import { UpdateRetailProductDto } from './dto/update-retail-product.dto';
 import { SellVariantDto } from './dto/sell-variant.dto';
+import { QuickSellDto } from './dto/quick-sell.dto';
 
 @Injectable()
 export class RetailProductsService {
@@ -145,6 +146,35 @@ export class RetailProductsService {
       quantity: sellVariantDto.quantity,
       soldPrice: sellVariantDto.soldPrice || product.price,
       soldDate: new Date(),
+      isExternal: false,
+    });
+
+    return product.save();
+  }
+
+  // Record external sale (doesn't affect inventory)
+  async recordExternalSale(id: string, sellVariantDto: SellVariantDto): Promise<RetailProduct> {
+    const product = await this.findOne(id);
+
+    // Verify variant exists (but don't check or update stock)
+    const variant = product.variants.find(
+      v => v.size === sellVariantDto.size && v.color === sellVariantDto.color
+    );
+
+    if (!variant) {
+      throw new NotFoundException(
+        `Variant ${sellVariantDto.color} ${sellVariantDto.size} not found in this product`
+      );
+    }
+
+    // Add to sales history as external sale (doesn't affect soldQuantity)
+    product.salesHistory.push({
+      size: sellVariantDto.size,
+      color: sellVariantDto.color,
+      quantity: sellVariantDto.quantity,
+      soldPrice: sellVariantDto.soldPrice || product.price,
+      soldDate: new Date(),
+      isExternal: true,
     });
 
     return product.save();
@@ -190,8 +220,8 @@ export class RetailProductsService {
     const products = await this.retailProductModel.find().exec();
 
     const allSales: Array<{
-      saleId: any;
-      productId: any;
+      saleId: string;
+      productId: string;
       productName: string;
       category: string;
       size: string;
@@ -199,14 +229,16 @@ export class RetailProductsService {
       quantity: number;
       soldPrice: number;
       soldDate: Date;
+      isExternal: boolean;
     }> = [];
 
+    // Add product sales
     for (const product of products) {
       if (product.salesHistory && product.salesHistory.length > 0) {
         for (const sale of product.salesHistory) {
           allSales.push({
-            saleId: (sale as any)._id,
-            productId: product._id,
+            saleId: (sale as any)._id?.toString(),
+            productId: (product as any)._id?.toString(),
             productName: product.name,
             category: product.category,
             size: sale.size,
@@ -214,6 +246,7 @@ export class RetailProductsService {
             quantity: sale.quantity,
             soldPrice: sale.soldPrice,
             soldDate: sale.soldDate,
+            isExternal: sale.isExternal || false,
           });
         }
       }
@@ -293,6 +326,44 @@ export class RetailProductsService {
     product.markModified('salesHistory');
 
     return product.save();
+  }
+
+  // Quick Sell: Create product and immediately sell it
+  async quickSell(quickSellDto: QuickSellDto): Promise<RetailProduct> {
+    // Create product name from category, color, and size
+    const productName = `${quickSellDto.category} ${quickSellDto.color} ${quickSellDto.size}`;
+
+    // Create the product with a single variant
+    const createDto: CreateRetailProductDto = {
+      name: productName,
+      description: 'Quick Sell Product',
+      price: quickSellDto.soldPrice,
+      costPrice: 0,
+      category: quickSellDto.category,
+      material: '',
+      images: [],
+      variants: [
+        {
+          size: quickSellDto.size,
+          color: quickSellDto.color,
+          quantity: quickSellDto.quantity,
+        }
+      ]
+    };
+
+    // Create the product
+    const product = await this.create(createDto);
+
+    // Immediately sell it
+    const sellDto: SellVariantDto = {
+      size: quickSellDto.size,
+      color: quickSellDto.color,
+      quantity: quickSellDto.quantity,
+      soldPrice: quickSellDto.soldPrice,
+    };
+
+    const productId = (product as any)._id.toString();
+    return this.sellVariant(productId, sellDto);
   }
 
   async remove(id: string): Promise<void> {
