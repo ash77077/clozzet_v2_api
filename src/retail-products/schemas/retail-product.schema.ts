@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 
 export class ProductVariant {
   @Prop({ required: true })
@@ -30,7 +30,19 @@ export class SaleRecord {
 
   @Prop({ required: true, default: Date.now })
   soldDate: Date;
+
+  @Prop({ required: false, default: false })
+  isExternal: boolean;
 }
+
+export const SaleRecordSchema = new MongooseSchema({
+  size: { type: String, required: true },
+  color: { type: String, required: true },
+  quantity: { type: Number, required: true },
+  soldPrice: { type: Number, required: true },
+  soldDate: { type: Date, required: true, default: Date.now },
+  isExternal: { type: Boolean, required: false, default: false },
+}, { _id: true });
 
 @Schema({ timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
 export class RetailProduct extends Document {
@@ -58,7 +70,7 @@ export class RetailProduct extends Document {
   @Prop({ type: [ProductVariant], default: [] })
   variants: ProductVariant[];
 
-  @Prop({ type: [SaleRecord], default: [] })
+  @Prop({ type: [SaleRecordSchema], default: [] })
   salesHistory: SaleRecord[];
 
   // Virtual fields that are calculated dynamically
