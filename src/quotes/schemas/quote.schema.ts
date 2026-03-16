@@ -23,17 +23,8 @@ export class Quote {
   @Prop({ required: true, min: 1 })
   quantity: number;
 
-  @Prop({ type: [String], default: [] })
-  additionalServices: string[];
-
-  @Prop({ required: true })
-  message: string;
-
-  @Prop({ required: true })
-  budget: string;
-
-  @Prop({ required: true })
-  timeline: string;
+  @Prop({ required: false })
+  message?: string;
 
   @Prop({ default: 'pending' })
   status: string;

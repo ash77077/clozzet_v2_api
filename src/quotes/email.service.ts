@@ -6,7 +6,7 @@ import { CreateQuoteDto } from './dto/create-quote.dto';
 export class EmailService {
   constructor(private readonly mailerService: MailerService) {}
 
-  async sendQuoteNotification(quoteData: CreateQuoteDto): Promise<void> {
+  async sendQuoteNotification(quoteData: CreateQuoteDto, files?: Array<Express.Multer.File>): Promise<void> {
     const productTypeLabels = {
       't-shirts': 'Custom T-Shirts',
       'polo-shirts': 'Polo Shirts',
@@ -16,34 +16,6 @@ export class EmailService {
       'promotional': 'Promotional Items',
       'other': 'Other'
     };
-
-    const budgetLabels = {
-      'under-1000': 'Under $1,000',
-      '1000-5000': '$1,000 - $5,000',
-      '5000-10000': '$5,000 - $10,000',
-      '10000-25000': '$10,000 - $25,000',
-      'over-25000': 'Over $25,000'
-    };
-
-    const timelineLabels = {
-      'asap': 'ASAP',
-      '1-week': 'Within 1 week',
-      '2-weeks': 'Within 2 weeks',
-      '1-month': 'Within 1 month',
-      'flexible': 'Flexible timeline'
-    };
-
-    const additionalServicesLabels = {
-      'logo-design': 'Logo Design Assistance',
-      'rush-delivery': 'Rush Delivery',
-      'sample-creation': 'Sample Creation',
-      'packaging': 'Custom Packaging',
-      'shipping': 'Shipping Coordination'
-    };
-
-    const formattedServices = quoteData.additionalServices
-      .map(service => additionalServicesLabels[service] || service)
-      .join(', ');
 
     const emailContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -88,33 +60,35 @@ export class EmailService {
                 <td style="padding: 8px 0; color: #666;"><strong>Quantity:</strong></td>
                 <td style="padding: 8px 0; color: #333;">${quoteData.quantity.toLocaleString()} pieces</td>
               </tr>
-              <tr>
-                <td style="padding: 8px 0; color: #666;"><strong>Budget Range:</strong></td>
-                <td style="padding: 8px 0; color: #333;">${budgetLabels[quoteData.budget] || quoteData.budget}</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; color: #666;"><strong>Timeline:</strong></td>
-                <td style="padding: 8px 0; color: #333;">${timelineLabels[quoteData.timeline] || quoteData.timeline}</td>
-              </tr>
-              ${formattedServices ? `
-              <tr>
-                <td style="padding: 8px 0; color: #666; vertical-align: top;"><strong>Additional Services:</strong></td>
-                <td style="padding: 8px 0; color: #333;">${formattedServices}</td>
-              </tr>
-              ` : ''}
             </table>
           </div>
 
+          ${quoteData.message ? `
           <div style="margin-bottom: 20px;">
             <h4 style="color: #333; margin-bottom: 10px;">💬 Project Message</h4>
             <div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px; border-left: 4px solid #007bff;">
               <p style="margin: 0; color: #333; line-height: 1.6;">${quoteData.message.replace(/\n/g, '<br>')}</p>
             </div>
           </div>
+          ` : ''}
+
+          ${files && files.length > 0 ? `
+          <div style="margin-bottom: 20px;">
+            <h4 style="color: #333; margin-bottom: 10px;">📎 Attached Files</h4>
+            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px;">
+              <p style="margin: 0; color: #333; line-height: 1.6;">
+                <strong>${files.length} file(s) attached:</strong>
+              </p>
+              <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #666;">
+                ${files.map(file => `<li>${file.originalname} (${(file.size / 1024).toFixed(2)} KB)</li>`).join('')}
+              </ul>
+            </div>
+          </div>
+          ` : ''}
 
           <div style="background-color: #e7f3ff; padding: 15px; border-radius: 6px; margin-top: 20px;">
             <p style="margin: 0; color: #0066cc; font-size: 14px;">
-              <strong>⏰ Quick Response:</strong> This request was submitted through your website. 
+              <strong>⏰ Quick Response:</strong> This request was submitted through your website.
               Consider responding within 4 hours to maintain excellent customer service.
             </p>
           </div>
@@ -129,10 +103,20 @@ export class EmailService {
       </div>
     `;
 
+    // Prepare attachments if files are provided
+    const attachments = files && files.length > 0
+      ? files.map(file => ({
+          filename: file.originalname,
+          content: file.buffer,
+          contentType: file.mimetype,
+        }))
+      : [];
+
     await this.mailerService.sendMail({
       to: 'clozzet.corp@gmail.com',
       subject: `🎯 New Quote Request from ${quoteData.companyName} - ${productTypeLabels[quoteData.productType] || quoteData.productType}`,
       html: emailContent,
+      attachments: attachments,
     });
   }
 }

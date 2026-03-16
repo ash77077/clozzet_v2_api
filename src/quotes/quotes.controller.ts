@@ -1,5 +1,6 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Logger, Get, Param } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Post, Body, HttpCode, HttpStatus, Logger, Get, Param, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiConsumes } from '@nestjs/swagger';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { QuotesService } from './quotes.service';
 import { CreateQuoteDto } from './dto/create-quote.dto';
 
@@ -12,6 +13,8 @@ export class QuotesController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(FilesInterceptor('mockups', 10))
+  @ApiConsumes('multipart/form-data', 'application/json')
   @ApiOperation({ summary: 'Submit a quote request' })
   @ApiResponse({
     status: 201,
@@ -32,11 +35,30 @@ export class QuotesController {
     status: 500,
     description: 'Internal Server Error',
   })
-  async create(@Body() createQuoteDto: CreateQuoteDto) {
-    this.logger.log(`Received quote request from ${createQuoteDto.email}`);
-    
+  async create(
+    @Body() body: any,
+    @UploadedFiles() files?: Array<Express.Multer.File>
+  ) {
+    this.logger.log(`Received quote request from ${body.email}`);
+
     try {
-      const result = await this.quotesService.create(createQuoteDto);
+      // Transform the data from FormData to DTO
+      const createQuoteDto: CreateQuoteDto = {
+        companyName: body.companyName,
+        contactName: body.contactName,
+        email: body.email,
+        phone: body.phone,
+        productType: body.productType,
+        quantity: parseInt(body.quantity, 10), // Convert string to number
+        message: body.message || undefined,
+      };
+
+      // Log uploaded files
+      if (files && files.length > 0) {
+        this.logger.log(`Received ${files.length} file(s): ${files.map(f => f.originalname).join(', ')}`);
+      }
+
+      const result = await this.quotesService.create(createQuoteDto, files);
       this.logger.log(`Quote request processed successfully for ${createQuoteDto.email}`);
       return result;
     } catch (error) {

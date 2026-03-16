@@ -258,7 +258,7 @@ export class ProductDetailsEmailService {
 
             <div class="footer">
                 <div>CLOZZET Manufacturing Department</div>
-                <div>📧 clozzet.corp@gmail.com | 📞 +374 (44) 01 07 44</div>
+                <div>📧 sales@clozzet.am | 📞 +374 (44) 01 07 44</div>
             </div>
         </div>
     </body>
@@ -552,7 +552,7 @@ export class ProductDetailsEmailService {
 
             <div class="footer">
                 <div>CLOZZET Manufacturing Department</div>
-                <div>📧 clozzet.corp@gmail.com | 📞 +374 (44) 01 07 44</div>
+                <div>📧 sales@clozzet.am | 📞 +374 (44) 01 07 44</div>
             </div>
         </div>
     </body>
