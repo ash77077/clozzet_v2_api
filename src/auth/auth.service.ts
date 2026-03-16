@@ -83,8 +83,11 @@ export class AuthService {
     }
 
     // Get company info
-    const company = user.company
-      ? await this.companiesService.findById(user.company.toString())
+    // user.company may be a populated document (has ._id) or a raw ObjectId —
+    // extract ._id first so we always pass a valid ObjectId string to findById.
+    const companyId = (user.company as any)?._id ?? user.company;
+    const company = companyId
+      ? await this.companiesService.findById(companyId.toString())
       : null;
 
     // Generate tokens

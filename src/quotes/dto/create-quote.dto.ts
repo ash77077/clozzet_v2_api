@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, IsNotEmpty, IsArray, IsOptional, IsNumber, Min } from 'class-validator';
+import { IsEmail, IsString, IsNotEmpty, IsOptional, IsNumber, Min } from 'class-validator';
 
 export class CreateQuoteDto {
   @ApiProperty({
@@ -51,35 +51,11 @@ export class CreateQuoteDto {
   quantity: number;
 
   @ApiProperty({
-    description: 'Additional services requested',
-    example: ['logo-design', 'rush-delivery'],
-    isArray: true,
-  })
-  @IsArray()
-  @IsOptional()
-  additionalServices: string[];
-
-  @ApiProperty({
     description: 'Detailed message about the project',
     example: 'We need custom branded t-shirts for our upcoming conference...',
+    required: false,
   })
   @IsString()
-  @IsNotEmpty()
-  message: string;
-
-  @ApiProperty({
-    description: 'Budget range for the project',
-    example: '1000-5000',
-  })
-  @IsString()
-  @IsNotEmpty()
-  budget: string;
-
-  @ApiProperty({
-    description: 'Timeline for the project',
-    example: '2-weeks',
-  })
-  @IsString()
-  @IsNotEmpty()
-  timeline: string;
+  @IsOptional()
+  message?: string;
 }

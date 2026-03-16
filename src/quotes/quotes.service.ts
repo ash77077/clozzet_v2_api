@@ -14,7 +14,7 @@ export class QuotesService {
     private emailService: EmailService,
   ) {}
 
-  async create(createQuoteDto: CreateQuoteDto): Promise<{ success: boolean; message: string; quoteId?: string }> {
+  async create(createQuoteDto: CreateQuoteDto, files?: Array<Express.Multer.File>): Promise<{ success: boolean; message: string; quoteId?: string }> {
     try {
       this.logger.log(`Creating new quote request from ${createQuoteDto.companyName}`);
 
@@ -24,8 +24,8 @@ export class QuotesService {
 
       this.logger.log(`Quote saved with ID: ${savedQuote._id}`);
 
-      // Send email notification
-      await this.emailService.sendQuoteNotification(createQuoteDto);
+      // Send email notification with attached files
+      await this.emailService.sendQuoteNotification(createQuoteDto, files);
       this.logger.log(`Email notification sent for quote ID: ${savedQuote._id}`);
 
       return {
@@ -35,7 +35,7 @@ export class QuotesService {
       };
     } catch (error) {
       this.logger.error(`Error creating quote: ${error.message}`, error.stack);
-      
+
       // If email fails but quote is saved, still return success
       if (error.message.includes('email') || error.message.includes('mail')) {
         this.logger.warn('Email failed but quote was saved');

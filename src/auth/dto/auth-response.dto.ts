@@ -21,7 +21,7 @@ export class UserResponseDto {
     example: {
       id: '507f1f77bcf86cd799439012',
       name: 'ACME Corporation',
-      email: 'clozzet.corp@gmail.com'
+      email: 'v'
     },
     required: false
   })

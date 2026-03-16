@@ -17,7 +17,7 @@ class CompanyInfoDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ example: 'clozzet.corp@gmail.com' })
+  @ApiProperty({ example: 'sales@clozzet.am' })
   @IsEmail()
   @IsNotEmpty()
   email: string;
