@@ -39,10 +39,10 @@ export class B2BOrdersController {
     return { success: true, message: 'Orders retrieved successfully', data };
   }
 
-  /** GET /b2b-orders — admin: returns all orders across all companies. */
+  /** GET /b2b-orders — admin/manager: returns all orders across all companies. */
   @Get()
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.MANAGER)
   async findAll() {
     const data = await this.b2bOrdersService.findAll();
     return { success: true, message: 'All orders retrieved successfully', data };

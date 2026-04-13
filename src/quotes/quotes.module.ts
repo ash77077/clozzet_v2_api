@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { QuotesController } from './quotes.controller';
 import { QuotesService } from './quotes.service';
@@ -28,13 +27,6 @@ import { Quote, QuoteSchema } from './schemas/quote.schema';
         },
         defaults: {
           from: `"CLOZZET Quote System" <${configService.get<string>('SMTP_FROM', 'noreply@clozzet.com')}>`,
-        },
-        template: {
-          dir: __dirname + '/templates',
-          adapter: new HandlebarsAdapter(),
-          options: {
-            strict: true,
-          },
         },
       }),
       inject: [ConfigService],
