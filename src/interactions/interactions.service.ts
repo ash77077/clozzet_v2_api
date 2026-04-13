@@ -99,6 +99,18 @@ export class InteractionsService {
       .exec();
   }
 
+  async update(id: string, updateData: any): Promise<Interaction> {
+    const interaction = await this.interactionModel
+      .findByIdAndUpdate(id, updateData, { new: true })
+      .exec();
+
+    if (!interaction) {
+      throw new NotFoundException(`Interaction with ID ${id} not found`);
+    }
+
+    return interaction;
+  }
+
   async markFollowUpCompleted(id: string): Promise<Interaction> {
     const interaction = await this.interactionModel
       .findByIdAndUpdate(

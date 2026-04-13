@@ -83,6 +83,17 @@ export class InteractionsController {
   }
 
   /**
+   * PATCH /interactions/:id - Update an interaction
+   */
+  @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.MANAGER)
+  async update(@Param('id') id: string, @Body() updateData: any) {
+    const data = await this.interactionsService.update(id, updateData);
+    return { success: true, message: 'Interaction updated successfully', data };
+  }
+
+  /**
    * PATCH /interactions/:id/complete - Mark follow-up as completed
    */
   @Patch(':id/complete')

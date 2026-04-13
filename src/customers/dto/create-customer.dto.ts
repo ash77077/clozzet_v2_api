@@ -1,5 +1,23 @@
-import { IsString, IsEmail, IsEnum, IsOptional, IsISO8601 } from 'class-validator';
+import { IsString, IsEmail, IsEnum, IsOptional, IsISO8601, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 import { CustomerStatus } from '../schemas/customer.schema';
+
+export class ContactPersonDto {
+  @IsString()
+  contactPerson: string;
+
+  @IsString()
+  @IsOptional()
+  position?: string;
+
+  @IsString()
+  @IsOptional()
+  phone?: string;
+
+  @IsEmail()
+  @IsOptional()
+  email?: string;
+}
 
 export class CreateCustomerDto {
   @IsString()
@@ -15,6 +33,12 @@ export class CreateCustomerDto {
   @IsEmail()
   @IsOptional()
   email?: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ContactPersonDto)
+  @IsOptional()
+  contacts?: ContactPersonDto[];
 
   @IsEnum(CustomerStatus)
   @IsOptional()
