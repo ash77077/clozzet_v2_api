@@ -7,6 +7,13 @@ export enum CustomerStatus {
   INACTIVE = 'Inactive',
 }
 
+export interface ContactPerson {
+  contactPerson: string;
+  position?: string;
+  phone?: string;
+  email?: string;
+}
+
 @Schema({ timestamps: true })
 export class Customer extends Document {
   @Prop({ required: true })
@@ -20,6 +27,9 @@ export class Customer extends Document {
 
   @Prop()
   email?: string;
+
+  @Prop({ type: Array, default: [] })
+  contacts?: ContactPerson[];
 
   @Prop({
     type: String,
