@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsEnum, IsOptional, IsISO8601, IsArray, ValidateNested } from 'class-validator';
+import { IsString, IsEmail, IsEnum, IsOptional, IsISO8601, IsArray, ValidateNested, ValidateIf } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CustomerStatus } from '../schemas/customer.schema';
 
@@ -14,6 +14,7 @@ export class ContactPersonDto {
   @IsOptional()
   phone?: string;
 
+  @ValidateIf((o) => o.email !== '' && o.email !== null && o.email !== undefined)
   @IsEmail()
   @IsOptional()
   email?: string;
@@ -30,6 +31,7 @@ export class CreateCustomerDto {
   @IsOptional()
   phone?: string;
 
+  @ValidateIf((o) => o.email !== '' && o.email !== null && o.email !== undefined)
   @IsEmail()
   @IsOptional()
   email?: string;
