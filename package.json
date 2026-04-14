@@ -21,7 +21,8 @@
     "create-admin": "ts-node -r tsconfig-paths/register src/scripts/create-admin.ts",
     "seed-products": "ts-node -r tsconfig-paths/register src/scripts/seed-products.ts",
     "import-toma": "ts-node -r tsconfig-paths/register src/scripts/import-toma-data.ts",
-    "import-toma:dry-run": "ts-node -r tsconfig-paths/register src/scripts/import-toma-data.ts --dry-run"
+    "import-toma:dry-run": "ts-node -r tsconfig-paths/register src/scripts/import-toma-data.ts --dry-run",
+    "migrate:contacts": "ts-node -r tsconfig-paths/register src/scripts/migrate-contacts.ts"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.3.4",
