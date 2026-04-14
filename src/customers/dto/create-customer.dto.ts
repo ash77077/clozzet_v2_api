@@ -18,6 +18,10 @@ export class ContactPersonDto {
   @IsEmail()
   @IsOptional()
   email?: string;
+
+  @IsString()
+  @IsOptional()
+  linkedinPage?: string;
 }
 
 export class CreateCustomerDto {
