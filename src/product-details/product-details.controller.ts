@@ -55,6 +55,8 @@ export class ProductDetailsController {
         mimetype: string;
         size: number;
         path: string;
+        url: string;
+        publicId: string;
       }[];
     };
   }> {
@@ -62,27 +64,36 @@ export class ProductDetailsController {
       throw new BadRequestException('No files uploaded');
     }
 
-    const uploadedFiles = files.map(file => ({
-      filename: file.filename,
-      originalname: file.originalname,
-      mimetype: file.mimetype,
-      size: file.size,
-      path: file.path,
-    }));
+    const uploadedFiles = files.map(file => {
+      // Cloudinary stores additional data in the file object
+      const cloudinaryFile = file as any;
+
+      return {
+        filename: cloudinaryFile.filename || cloudinaryFile.public_id || file.filename,
+        originalname: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        path: cloudinaryFile.path || cloudinaryFile.secure_url || file.path,
+        url: cloudinaryFile.secure_url || cloudinaryFile.url || file.path, // Cloudinary secure URL
+        publicId: cloudinaryFile.public_id || '', // Cloudinary public ID
+      };
+    });
 
     return {
       success: true,
-      message: `${files.length} file(s) uploaded successfully`,
+      message: `${files.length} file(s) uploaded successfully to Cloudinary`,
       data: {
         uploadedFiles,
       },
     };
   }
 
+  // NOTE: This endpoint is kept for backward compatibility with old local files
+  // New uploads are stored in Cloudinary and accessed via direct URLs
   @Get('files/:filename')
   @ApiOperation({
-    summary: 'Download uploaded file',
-    description: 'Download a specific uploaded file by filename',
+    summary: 'Download uploaded file (Legacy)',
+    description: 'Download a specific uploaded file by filename. For backward compatibility with old local files.',
   })
   @ApiParam({
     name: 'filename',
@@ -130,10 +141,12 @@ export class ProductDetailsController {
     }
   }
 
+  // NOTE: This endpoint is kept for backward compatibility with old local files
+  // New uploads are stored in Cloudinary and accessed via direct URLs
   @Get('preview/:filename')
   @ApiOperation({
-    summary: 'Preview uploaded file',
-    description: 'Display a specific uploaded file inline for email previews and browser viewing',
+    summary: 'Preview uploaded file (Legacy)',
+    description: 'Display a specific uploaded file inline. For backward compatibility with old local files.',
   })
   @ApiParam({
     name: 'filename',
@@ -450,6 +463,41 @@ export class ProductDetailsController {
     };
   }
 
+  @Patch(':id')
+  @ApiOperation({
+    summary: 'Update product details',
+    description: 'Updates product details with partial data',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Product details ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Product details updated successfully',
+    type: ProductDetails,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Product details not found',
+  })
+  async update(
+    @Param('id') id: string,
+    @Body() updateData: Partial<CreateProductDetailsDto>,
+  ): Promise<{
+    success: boolean;
+    message: string;
+    data: ProductDetails;
+  }> {
+    const productDetails = await this.productDetailsService.update(id, updateData);
+
+    return {
+      success: true,
+      message: 'Product details updated successfully',
+      data: productDetails,
+    };
+  }
+
   @Patch(':id/status')
   @ApiOperation({
     summary: 'Update product details status',
@@ -480,7 +528,7 @@ export class ProductDetailsController {
       id,
       updateStatusDto.status,
     );
-    
+
     return {
       success: true,
       message: 'Status updated successfully',

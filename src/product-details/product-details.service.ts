@@ -1,9 +1,10 @@
-import {BadRequestException, Injectable} from '@nestjs/common';
+import {BadRequestException, forwardRef, Inject, Injectable} from '@nestjs/common';
 import {InjectModel} from '@nestjs/mongoose';
 import {Model} from 'mongoose';
 import {ProductDetails, ProductDetailsDocument} from './schemas/product-details.schema';
 import {CreateProductDetailsDto} from './dto/create-product-details.dto';
 import {ProductDetailsEmailService} from './product-details-email.service';
+import {NotificationsGateway} from '../notifications/notifications.gateway';
 
 @Injectable()
 export class ProductDetailsService {
@@ -11,19 +12,23 @@ export class ProductDetailsService {
     @InjectModel(ProductDetails.name)
     private productDetailsModel: Model<ProductDetailsDocument>,
     private productDetailsEmailService: ProductDetailsEmailService,
+    @Inject(forwardRef(() => NotificationsGateway))
+    private notificationsGateway: NotificationsGateway,
   ) {}
 
   async create(createProductDetailsDto: CreateProductDetailsDto): Promise<ProductDetails> {
     try {
-      // Validate size quantities
+      // Validate size quantities if provided
       this.validateSizeQuantities(createProductDetailsDto);
-      
-      // Calculate total quantity from size quantities
-      const calculatedTotal = this.calculateTotalQuantity(createProductDetailsDto.sizeQuantities);
-      
-      // Ensure the provided total matches the calculated total
-      if (createProductDetailsDto.quantity !== calculatedTotal) {
-        createProductDetailsDto.quantity = calculatedTotal;
+
+      // Calculate total quantity from size quantities if they are provided
+      if (createProductDetailsDto.sizeQuantities && Object.keys(createProductDetailsDto.sizeQuantities).length > 0) {
+        const calculatedTotal = this.calculateTotalQuantity(createProductDetailsDto.sizeQuantities);
+
+        // Ensure the provided total matches the calculated total
+        if (createProductDetailsDto.quantity !== calculatedTotal) {
+          createProductDetailsDto.quantity = calculatedTotal;
+        }
       }
 
       // Generate automatic order number if not provided
@@ -95,6 +100,30 @@ export class ProductDetailsService {
       .find({ clothType })
       .sort({ createdAt: -1 })
       .exec();
+  }
+
+  async update(id: string, updateData: Partial<CreateProductDetailsDto>): Promise<ProductDetails> {
+    // Validate size quantities if provided
+    if (updateData.sizeQuantities) {
+      this.validateSizeQuantities(updateData as CreateProductDetailsDto);
+
+      // Recalculate total quantity from size quantities
+      updateData.quantity = this.calculateTotalQuantity(updateData.sizeQuantities);
+    }
+
+    const updatedProductDetails = await this.productDetailsModel
+      .findByIdAndUpdate(
+        id,
+        { ...updateData, updatedAt: new Date() },
+        { new: true }
+      )
+      .exec();
+
+    if (!updatedProductDetails) {
+      throw new BadRequestException(`Product details with ID ${id} not found`);
+    }
+
+    return updatedProductDetails.toObject();
   }
 
   async updateStatus(id: string, status: string): Promise<ProductDetails> {
@@ -177,7 +206,7 @@ export class ProductDetailsService {
     const updatedProductDetails = await this.productDetailsModel
       .findByIdAndUpdate(
         id,
-        { 
+        {
           $push: { manufacturingNotes: newNote },
           updatedAt: new Date()
         },
@@ -188,6 +217,14 @@ export class ProductDetailsService {
     if (!updatedProductDetails) {
       throw new BadRequestException(`Product details with ID ${id} not found`);
     }
+
+    // Broadcast activity update via WebSocket to all users watching this order
+    this.notificationsGateway.broadcastOrderActivity(id, {
+      type: 'comment',
+      date: newNote.date,
+      author: newNote.author,
+      content: newNote.content,
+    });
 
     return updatedProductDetails.toObject();
   }
@@ -259,16 +296,18 @@ export class ProductDetailsService {
 
   private validateSizeQuantities(dto: CreateProductDetailsDto): void {
     const sizeQuantities = dto.sizeQuantities;
-    
+
+    // Size quantities are optional, so only validate if provided
     if (!sizeQuantities || Object.keys(sizeQuantities).length === 0) {
-      throw new BadRequestException('Size quantities are required');
+      return; // No validation needed if not provided
     }
 
-    // Ensure all quantities are positive numbers
-    for (const [size, quantity] of Object.entries(sizeQuantities)) {
-      if (quantity <= 0) {
-        throw new BadRequestException(`Quantity for size ${size} must be greater than 0`);
-      }
+    // Calculate total quantity from all sizes
+    const totalQuantity = Object.values(sizeQuantities).reduce((sum, qty) => sum + (qty || 0), 0);
+
+    // Ensure the total quantity is greater than 0
+    if (totalQuantity <= 0) {
+      throw new BadRequestException('Total quantity from size quantities must be greater than 0');
     }
   }
 

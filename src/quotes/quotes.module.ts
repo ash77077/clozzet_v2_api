@@ -26,7 +26,7 @@ import { Quote, QuoteSchema } from './schemas/quote.schema';
           },
         },
         defaults: {
-          from: `"CLOZZET Quote System" <${configService.get<string>('SMTP_FROM', 'noreply@clozzet.com')}>`,
+          from: `"CLOZZET Quote System" <${configService.get<string>('SMTP_FROM', 'noreply@clozzet.am')}>`,
         },
       }),
       inject: [ConfigService],

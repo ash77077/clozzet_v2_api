@@ -26,6 +26,12 @@ export class ProductDetails {
   @Prop({ required: true, enum: ['low', 'normal', 'high', 'urgent'] })
   priority: string;
 
+  @Prop()
+  status?: string;
+
+  @Prop()
+  startDate?: string;
+
   @Prop({ required: true })
   clothType: string;
 
@@ -35,11 +41,17 @@ export class ProductDetails {
   @Prop()
   fabricWeight?: number;
 
-  @Prop({ required: true, type: [String] })
-  colors: string[];
+  @Prop({ type: [String] })
+  colors?: string[];
 
   @Prop()
   customColorDetails?: string;
+
+  @Prop()
+  designMethod?: string;
+
+  @Prop()
+  printingMethod?: string;
 
   @Prop({ required: true, type: Object })
   sizeQuantities: { [size: string]: number };
@@ -121,9 +133,6 @@ export class ProductDetails {
 
   @Prop()
   specialInstructions?: string;
-
-  @Prop()
-  packagingRequirements?: string;
 
   @Prop()
   shippingAddress?: string;
