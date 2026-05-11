@@ -1,27 +1,8 @@
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
-import { diskStorage } from 'multer';
-import { extname, join } from 'path';
-import { existsSync, mkdirSync } from 'fs';
+import { cloudinaryStorage } from './cloudinary.config';
 
 export const multerConfig: MulterOptions = {
-  storage: diskStorage({
-    destination: (req, file, cb) => {
-      const uploadPath = join(__dirname, '..', '..', '..', 'uploads', 'product-details');
-      
-      // Ensure the upload directory exists
-      if (!existsSync(uploadPath)) {
-        mkdirSync(uploadPath, { recursive: true });
-      }
-      
-      cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      const ext = extname(file.originalname);
-      const filename = `${file.fieldname}-${uniqueSuffix}${ext}`;
-      cb(null, filename);
-    },
-  }),
+  storage: cloudinaryStorage,
   fileFilter: (req, file, cb) => {
     // Allow images and common design files
     const allowedMimes = [

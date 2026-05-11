@@ -50,6 +50,24 @@ export class CreateProductDetailsDto {
   @IsEnum(['low', 'normal', 'high', 'urgent'])
   priority: string;
 
+  @ApiProperty({
+    description: 'Order status',
+    example: 'pending',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  status?: string;
+
+  @ApiProperty({
+    description: 'Start date',
+    example: '2024-02-01',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  startDate?: string;
+
   // Product Specifications
   @ApiProperty({
     description: 'Type of cloth/product',
@@ -80,10 +98,12 @@ export class CreateProductDetailsDto {
     description: 'Selected colors',
     example: ['white', 'black', 'navy'],
     isArray: true,
+    required: false,
   })
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  colors: string[];
+  colors?: string[];
 
   @ApiProperty({
     description: 'Custom color details if custom color selected',
@@ -97,18 +117,30 @@ export class CreateProductDetailsDto {
   @ApiProperty({
     description: 'Size quantities breakdown',
     example: { 'S': 10, 'M': 25, 'L': 15, 'XL': 5 },
+    required: false,
   })
+  @IsOptional()
   @IsObject()
-  sizeQuantities: { [size: string]: number };
+  sizeQuantities?: { [size: string]: number };
 
   // Design & Printing
   @ApiProperty({
+    description: 'Design method',
+    example: 'ասեղնագործությւոն',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  designMethod?: string;
+
+  @ApiProperty({
     description: 'Printing method',
     example: 'screen-printing',
+    required: false,
   })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  printingMethod: string;
+  printingMethod?: string;
 
   @ApiProperty({
     description: 'Logo position',
@@ -272,14 +304,6 @@ export class CreateProductDetailsDto {
   @IsOptional()
   @IsString()
   specialInstructions?: string;
-
-  @ApiProperty({
-    description: 'Packaging requirements',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  packagingRequirements?: string;
 
   @ApiProperty({
     description: 'Shipping address',

@@ -12,6 +12,7 @@ export interface ContactPerson {
   position?: string;
   phone?: string;
   email?: string;
+  linkedinPage?: string;
 }
 
 @Schema({ timestamps: true })

@@ -128,15 +128,14 @@ export class OrderRequestsService {
 
     // Get manager details for notification
     const manager = await this.usersService.findById(orderRequest.createdBy);
-    if (manager && manager.email) {
+    if (manager) {
       // Send notification to manager
       await this.notificationsService.notifyManagerOrderRequestReviewed({
-        managerEmail: manager.email,
+        managerId: orderRequest.createdBy,
         modelName: orderRequest.modelName,
         status: dto.status === OrderRequestStatus.APPROVED ? 'Approved' : 'Rejected',
-        internalCost: dto.internalCost,
-        profitMargin,
-        adminNotes: dto.adminNotes,
+        reviewNote: dto.adminNotes,
+        requestId: id,
       });
     }
 

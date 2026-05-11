@@ -51,7 +51,7 @@ export class ProductDetailsEmailService {
   }
 
   private generateEmailTemplate(data: CreateProductDetailsDto): string {
-    const sizeQuantitiesTable = this.generateSizeQuantitiesTable(data.sizeQuantities);
+    const sizeQuantitiesTable = data.sizeQuantities ? this.generateSizeQuantitiesTable(data.sizeQuantities) : '<p>No size quantities specified</p>';
     const specificDetails = this.generateSpecificDetails(data);
     const priorityBadge = this.getPriorityBadge(data.priority);
     
@@ -157,6 +157,7 @@ export class ProductDetailsEmailService {
                             <div class="detail-value">${data.fabricWeight} GSM</div>
                         </div>
                         ` : ''}
+                        ${data.colors && data.colors.length > 0 ? `
                         <div class="detail-item">
                             <div class="detail-label">Colors</div>
                             <div class="detail-value">
@@ -166,6 +167,7 @@ export class ProductDetailsEmailService {
                                 ${data.customColorDetails ? `<div style="margin-top: 10px;"><strong>Custom Color:</strong> ${data.customColorDetails}</div>` : ''}
                             </div>
                         </div>
+                        ` : ''}
                     </div>
                 </div>
 
@@ -175,12 +177,14 @@ export class ProductDetailsEmailService {
                 </div>
 
                 <div class="section">
-                    <div class="section-title">🎨 Design & Printing</div>
+                    <div class="section-title">🎨 Design</div>
                     <div class="details-grid">
+                        ${data.designMethod ? `
                         <div class="detail-item">
-                            <div class="detail-label">Printing Method</div>
-                            <div class="detail-value">${data.printingMethod}</div>
+                            <div class="detail-label">Design Method</div>
+                            <div class="detail-value">${data.designMethod}</div>
                         </div>
+                        ` : ''}
                         ${data.logoPosition ? `
                         <div class="detail-item">
                             <div class="detail-label">Logo Position</div>
@@ -229,7 +233,7 @@ export class ProductDetailsEmailService {
                 </div>
                 ` : ''}
 
-                ${data.specialInstructions || data.packagingRequirements || data.shippingAddress ? `
+                ${data.specialInstructions || data.shippingAddress ? `
                 <div class="section">
                     <div class="section-title">📝 Additional Details</div>
                     <div class="details-grid">
@@ -237,12 +241,6 @@ export class ProductDetailsEmailService {
                         <div class="detail-item">
                             <div class="detail-label">Special Instructions</div>
                             <div class="detail-value">${data.specialInstructions}</div>
-                        </div>
-                        ` : ''}
-                        ${data.packagingRequirements ? `
-                        <div class="detail-item">
-                            <div class="detail-label">Packaging Requirements</div>
-                            <div class="detail-value">${data.packagingRequirements}</div>
                         </div>
                         ` : ''}
                         ${data.shippingAddress ? `
