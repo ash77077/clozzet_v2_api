@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export enum CustomerStatus {
   LEAD = 'Lead',
@@ -68,6 +68,9 @@ export class Customer extends Document {
 
   @Prop({ default: true })
   isActive: boolean;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
+  createdBy?: Types.ObjectId;
 }
 
 export const CustomerSchema = SchemaFactory.createForClass(Customer);

@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CustomersService } from './customers.service';
-import { InteractionsService } from '../interactions/interactions.service';
+import { CustomersSchedulerService } from './customers-scheduler.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -27,7 +27,8 @@ import * as XLSX from 'xlsx';
 @UseGuards(JwtAuthGuard)
 export class CustomersController {
   constructor(
-    private readonly customersService: CustomersService
+    private readonly customersService: CustomersService,
+    private readonly customersSchedulerService: CustomersSchedulerService,
   ) {}
 
   /**
@@ -36,8 +37,11 @@ export class CustomersController {
   @Post()
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.MANAGER)
-  async create(@Body() createCustomerDto: CreateCustomerDto) {
-    const data = await this.customersService.create(createCustomerDto);
+  async create(@Body() createCustomerDto: CreateCustomerDto, @Req() req: any) {
+    const userId = req.user?.userId;
+    console.log('[CREATE CUSTOMER] User from JWT:', req.user);
+    console.log('[CREATE CUSTOMER] User ID:', userId);
+    const data = await this.customersService.create(createCustomerDto, userId);
     return { success: true, message: 'Customer created successfully', data };
   }
 
@@ -104,7 +108,7 @@ export class CustomersController {
    */
   @Delete(':id')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.MANAGER)
   async remove(@Param('id') id: string) {
     await this.customersService.remove(id);
     return { success: true, message: 'Customer deleted successfully', data: null };
@@ -126,6 +130,25 @@ export class CustomersController {
   }
 
   /**
+   * POST /customers/trigger-followup-notifications - Manually trigger daily follow-up notifications
+   * This endpoint allows admins to manually trigger the follow-up notification system for testing
+   */
+  @Post('trigger-followup-notifications')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  async triggerFollowUpNotifications() {
+    const result = await this.customersSchedulerService.triggerManualFollowUpReminder();
+    return {
+      success: result.success,
+      message: result.message,
+      data: {
+        customersCount: result.customersCount,
+        managersNotified: result.managersNotified,
+      },
+    };
+  }
+
+  /**
    * POST /customers/import/excel/validate - Validate Excel file before import
    * Required columns: Company Name, Contact Person
    * Optional columns: Phone, Email, Status, Address, Website, Industry, Notes, First Contact Date, Scheduled Meeting, Next Follow Up
@@ -139,7 +162,7 @@ export class CustomersController {
       throw new BadRequestException('No file uploaded');
     }
 
-    const userId = req.user?.id || req.user?._id;
+    const userId = req.user?.userId;
     const result = await this.processExcelFile(file, true, userId);
     return {
       success: true,
@@ -162,7 +185,7 @@ export class CustomersController {
       throw new BadRequestException('No file uploaded');
     }
 
-    const userId = req.user?.id || req.user?._id;
+    const userId = req.user?.userId;
     const result = await this.processExcelFile(file, false, userId);
     return {
       success: true,

@@ -19,8 +19,12 @@ export class CustomersService {
     private readonly interactionsService: InteractionsService,
   ) {}
 
-  async create(createCustomerDto: CreateCustomerDto): Promise<Customer> {
-    const customer = new this.customerModel(createCustomerDto);
+  async create(createCustomerDto: CreateCustomerDto, userId?: string): Promise<Customer> {
+    const customerData = {
+      ...createCustomerDto,
+      createdBy: userId || null,
+    };
+    const customer = new this.customerModel(customerData);
     return await customer.save();
   }
 
@@ -233,8 +237,8 @@ export class CustomersService {
           }
         }
 
-        // Create the customer
-        const customer = await this.create(dto);
+        // Create the customer with userId
+        const customer = await this.create(dto, userId);
         result.success++;
         result.importedCustomers.push(customer);
 

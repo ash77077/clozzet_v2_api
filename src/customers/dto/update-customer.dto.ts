@@ -55,15 +55,18 @@ export class UpdateCustomerDto {
   @IsOptional()
   source?: string;
 
+  @ValidateIf((o) => o.nextFollowUpAt !== null && o.nextFollowUpAt !== undefined)
   @IsISO8601({ strict: true })
   @IsOptional()
-  nextFollowUpAt?: string;
+  nextFollowUpAt?: string | null;
 
+  @ValidateIf((o) => o.lastContactedAt !== null && o.lastContactedAt !== undefined)
   @IsISO8601({ strict: true })
   @IsOptional()
-  lastContactedAt?: string;
+  lastContactedAt?: string | null;
 
+  @ValidateIf((o) => o.scheduledMeetingAt !== null && o.scheduledMeetingAt !== undefined)
   @IsISO8601({ strict: true })
   @IsOptional()
-  scheduledMeetingAt?: string;
+  scheduledMeetingAt?: string | null;
 }
