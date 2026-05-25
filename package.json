@@ -22,7 +22,9 @@
     "seed-products": "ts-node -r tsconfig-paths/register src/scripts/seed-products.ts",
     "import-toma": "ts-node -r tsconfig-paths/register src/scripts/import-toma-data.ts",
     "import-toma:dry-run": "ts-node -r tsconfig-paths/register src/scripts/import-toma-data.ts --dry-run",
-    "migrate:contacts": "ts-node -r tsconfig-paths/register src/scripts/migrate-contacts.ts"
+    "migrate:contacts": "ts-node -r tsconfig-paths/register src/scripts/migrate-contacts.ts",
+    "migrate:assign-customers": "ts-node -r tsconfig-paths/register src/scripts/assign-customers-to-toma.ts",
+    "test-notifications": "ts-node -r tsconfig-paths/register src/scripts/test-notifications.ts"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.3.4",
@@ -33,6 +35,7 @@
     "@nestjs/mongoose": "^11.0.3",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/schedule": "^6.1.3",
     "@nestjs/platform-socket.io": "^11.1.19",
     "@nestjs/swagger": "^11.2.0",
     "@nestjs/websockets": "^11.1.19",

@@ -1,5 +1,119 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsArray, IsOptional, IsNumber, Min, IsObject, IsEnum } from 'class-validator';
+import { IsString, IsNotEmpty, IsArray, IsOptional, IsNumber, Min, IsObject, IsEnum, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class ProductItemDto {
+  @ApiProperty({
+    description: 'Type of cloth/product',
+    example: 't-shirts',
+  })
+  @IsString()
+  @IsNotEmpty()
+  clothType: string;
+
+  @ApiProperty({
+    description: 'Textile type',
+    example: 'cotton',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  textileType?: string;
+
+  @ApiProperty({
+    description: 'Design method for this product',
+    example: 'Ասեղնագործություն',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  designMethod?: string;
+
+  @ApiProperty({
+    description: 'Colors for this product',
+    example: 'Black, White, Navy Blue',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  colors?: string;
+
+  @ApiProperty({
+    description: 'Custom color details',
+    example: 'Pantone 185C',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  customColorDetails?: string;
+
+  @ApiProperty({
+    description: 'Logo position',
+    example: 'front-center',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  logoPosition?: string;
+
+  @ApiProperty({
+    description: 'Logo size',
+    example: '10x8 cm',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  logoSize?: string;
+
+  @ApiProperty({
+    description: 'Comments for this product',
+    example: 'Please use premium quality cotton',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  comments?: string;
+
+  @ApiProperty({
+    description: 'Cost price per unit (production cost)',
+    example: 8.50,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  costPricePerUnit?: number;
+
+  @ApiProperty({
+    description: 'Selling price per unit (price charged to customer)',
+    example: 15.00,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  sellingPricePerUnit?: number;
+
+  @ApiProperty({
+    description: 'Size breakdown for this product',
+    example: {
+      xs: { men: 5, women: 10, uni: 0 },
+      s: { men: 10, women: 15, uni: 5 },
+      m: { men: 20, women: 20, uni: 10 }
+    },
+    required: false,
+  })
+  @IsOptional()
+  @IsObject()
+  sizes?: {
+    xs?: { men?: number; women?: number; uni?: number };
+    s?: { men?: number; women?: number; uni?: number };
+    m?: { men?: number; women?: number; uni?: number };
+    l?: { men?: number; women?: number; uni?: number };
+    xl?: { men?: number; women?: number; uni?: number };
+    xxl?: { men?: number; women?: number; uni?: number };
+    xxxl?: { men?: number; women?: number; uni?: number };
+    xxxxl?: { men?: number; women?: number; uni?: number };
+  };
+}
 
 export class CreateProductDetailsDto {
   @ApiProperty({
@@ -12,8 +126,17 @@ export class CreateProductDetailsDto {
   orderNumber?: string;
 
   @ApiProperty({
-    description: 'Client/Company name',
+    description: 'Company name',
     example: 'Tech Corp',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  companyName?: string;
+
+  @ApiProperty({
+    description: 'Client name',
+    example: 'John Doe',
   })
   @IsString()
   @IsNotEmpty()
@@ -36,7 +159,7 @@ export class CreateProductDetailsDto {
   deadline: string;
 
   @ApiProperty({
-    description: 'Total quantity (auto-calculated)',
+    description: 'Total quantity (auto-calculated from products)',
     example: 100,
   })
   @IsNumber()
@@ -49,6 +172,17 @@ export class CreateProductDetailsDto {
   })
   @IsEnum(['low', 'normal', 'high', 'urgent'])
   priority: string;
+
+  @ApiProperty({
+    description: 'Array of products in this order',
+    type: [ProductItemDto],
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductItemDto)
+  products?: ProductItemDto[];
 
   @ApiProperty({
     description: 'Order status',
@@ -68,22 +202,24 @@ export class CreateProductDetailsDto {
   @IsString()
   startDate?: string;
 
-  // Product Specifications
+  // Legacy Product Specifications (for backward compatibility)
   @ApiProperty({
-    description: 'Type of cloth/product',
+    description: 'Type of cloth/product (legacy - use products array instead)',
     example: 't-shirts',
+    required: false,
   })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  clothType: string;
+  clothType?: string;
 
   @ApiProperty({
-    description: 'Textile type',
+    description: 'Textile type (legacy - use products array instead)',
     example: 'cotton',
+    required: false,
   })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  textileType: string;
+  textileType?: string;
 
   @ApiProperty({
     description: 'Fabric weight in GSM',
@@ -304,6 +440,14 @@ export class CreateProductDetailsDto {
   @IsOptional()
   @IsString()
   specialInstructions?: string;
+
+  @ApiProperty({
+    description: 'Packaging requirements',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  packagingRequirements?: string;
 
   @ApiProperty({
     description: 'Shipping address',

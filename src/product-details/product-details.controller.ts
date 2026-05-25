@@ -14,6 +14,8 @@ import {
   UploadedFiles,
   BadRequestException,
   Res,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
@@ -24,6 +26,7 @@ import { ProductDetails } from './schemas/product-details.schema';
 import { multerConfig } from './config/multer.config';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('product-details')
 @Controller('product-details')
@@ -224,6 +227,7 @@ export class ProductDetailsController {
   }
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Create new product details',
@@ -240,13 +244,24 @@ export class ProductDetailsController {
   })
   async create(
     @Body(ValidationPipe) createProductDetailsDto: CreateProductDetailsDto,
+    @Req() req: any,
   ): Promise<{
     success: boolean;
     message: string;
     data: ProductDetails;
   }> {
-    const productDetails = await this.productDetailsService.create(createProductDetailsDto);
-    
+    // Extract user ID from JWT token
+    const userId = req.user?.userId || req.user?.sub || req.user?.id;
+    console.log('Creating order with user:', req.user, 'userId:', userId);
+
+    // Add createdBy field to the DTO
+    const dataWithCreatedBy = {
+      ...createProductDetailsDto,
+      createdBy: userId,
+    };
+
+    const productDetails = await this.productDetailsService.create(dataWithCreatedBy);
+
     return {
       success: true,
       message: 'Product details created successfully and email notification sent to manufacturing team',

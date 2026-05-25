@@ -11,6 +11,9 @@ export class ProductDetails {
   @Prop({ required: true })
   orderNumber: string;
 
+  @Prop()
+  companyName?: string;
+
   @Prop({ required: true })
   clientName: string;
 
@@ -32,11 +35,62 @@ export class ProductDetails {
   @Prop()
   startDate?: string;
 
-  @Prop({ required: true })
-  clothType: string;
+  // Products array - for orders with multiple product types
+  @Prop({
+    type: [{
+      clothType: { type: String, required: true },
+      textileType: { type: String },
+      designMethod: { type: String },
+      colors: { type: String },
+      customColorDetails: { type: String },
+      logoPosition: { type: String },
+      logoSize: { type: String },
+      comments: { type: String },
+      costPricePerUnit: { type: Number },
+      sellingPricePerUnit: { type: Number },
+      sizes: {
+        type: {
+          xs: { men: Number, women: Number, uni: Number },
+          s: { men: Number, women: Number, uni: Number },
+          m: { men: Number, women: Number, uni: Number },
+          l: { men: Number, women: Number, uni: Number },
+          xl: { men: Number, women: Number, uni: Number },
+          xxl: { men: Number, women: Number, uni: Number },
+          xxxl: { men: Number, women: Number, uni: Number },
+          xxxxl: { men: Number, women: Number, uni: Number }
+        }
+      }
+    }]
+  })
+  products?: Array<{
+    clothType: string;
+    textileType?: string;
+    designMethod?: string;
+    colors?: string;
+    customColorDetails?: string;
+    logoPosition?: string;
+    logoSize?: string;
+    comments?: string;
+    costPricePerUnit?: number;
+    sellingPricePerUnit?: number;
+    sizes?: {
+      xs?: { men?: number; women?: number; uni?: number };
+      s?: { men?: number; women?: number; uni?: number };
+      m?: { men?: number; women?: number; uni?: number };
+      l?: { men?: number; women?: number; uni?: number };
+      xl?: { men?: number; women?: number; uni?: number };
+      xxl?: { men?: number; women?: number; uni?: number };
+      xxxl?: { men?: number; women?: number; uni?: number };
+      xxxxl?: { men?: number; women?: number; uni?: number };
+    };
+  }>;
 
-  @Prop({ required: true })
-  textileType: string;
+  // Legacy fields for backward compatibility - kept for existing orders
+  @Prop()
+  clothType?: string;
+
+  @Prop()
+  textileType?: string;
 
   @Prop()
   fabricWeight?: number;
@@ -53,8 +107,8 @@ export class ProductDetails {
   @Prop()
   printingMethod?: string;
 
-  @Prop({ required: true, type: Object })
-  sizeQuantities: { [size: string]: number };
+  @Prop({ type: Object })
+  sizeQuantities?: { [size: string]: number };
 
   @Prop()
   logoPosition?: string;
@@ -135,7 +189,13 @@ export class ProductDetails {
   specialInstructions?: string;
 
   @Prop()
+  packagingRequirements?: string;
+
+  @Prop()
   shippingAddress?: string;
+
+  @Prop({ type: String })
+  createdBy?: string;
 
   @Prop({
     type: String,

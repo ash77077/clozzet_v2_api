@@ -18,17 +18,14 @@ export class ProductDetailsService {
 
   async create(createProductDetailsDto: CreateProductDetailsDto): Promise<ProductDetails> {
     try {
-      // Validate size quantities if provided
-      this.validateSizeQuantities(createProductDetailsDto);
-
-      // Calculate total quantity from size quantities if they are provided
-      if (createProductDetailsDto.sizeQuantities && Object.keys(createProductDetailsDto.sizeQuantities).length > 0) {
-        const calculatedTotal = this.calculateTotalQuantity(createProductDetailsDto.sizeQuantities);
-
-        // Ensure the provided total matches the calculated total
-        if (createProductDetailsDto.quantity !== calculatedTotal) {
-          createProductDetailsDto.quantity = calculatedTotal;
-        }
+      // Calculate total quantity from products array if provided
+      if (createProductDetailsDto.products && createProductDetailsDto.products.length > 0) {
+        createProductDetailsDto.quantity = this.calculateTotalQuantityFromProducts(createProductDetailsDto.products);
+      }
+      // Legacy: Validate size quantities if provided
+      else if (createProductDetailsDto.sizeQuantities && Object.keys(createProductDetailsDto.sizeQuantities).length > 0) {
+        this.validateSizeQuantities(createProductDetailsDto);
+        createProductDetailsDto.quantity = this.calculateTotalQuantity(createProductDetailsDto.sizeQuantities);
       }
 
       // Generate automatic order number if not provided
@@ -103,11 +100,13 @@ export class ProductDetailsService {
   }
 
   async update(id: string, updateData: Partial<CreateProductDetailsDto>): Promise<ProductDetails> {
-    // Validate size quantities if provided
-    if (updateData.sizeQuantities) {
+    // Calculate total quantity from products array if provided
+    if (updateData.products && updateData.products.length > 0) {
+      updateData.quantity = this.calculateTotalQuantityFromProducts(updateData.products);
+    }
+    // Legacy: Validate size quantities if provided
+    else if (updateData.sizeQuantities) {
       this.validateSizeQuantities(updateData as CreateProductDetailsDto);
-
-      // Recalculate total quantity from size quantities
       updateData.quantity = this.calculateTotalQuantity(updateData.sizeQuantities);
     }
 
@@ -313,6 +312,27 @@ export class ProductDetailsService {
 
   private calculateTotalQuantity(sizeQuantities: { [size: string]: number }): number {
     return Object.values(sizeQuantities).reduce((total, quantity) => total + quantity, 0);
+  }
+
+  private calculateTotalQuantityFromProducts(products: any[]): number {
+    let total = 0;
+
+    for (const product of products) {
+      if (product.sizes) {
+        // Iterate through all size categories (xs, s, m, l, xl, xxl, xxxl, xxxxl)
+        const sizeKeys = ['xs', 's', 'm', 'l', 'xl', 'xxl', 'xxxl', 'xxxxl'];
+
+        for (const sizeKey of sizeKeys) {
+          const sizeData = product.sizes[sizeKey];
+          if (sizeData) {
+            // Add men, women, and uni quantities
+            total += (sizeData.men || 0) + (sizeData.women || 0) + (sizeData.uni || 0);
+          }
+        }
+      }
+    }
+
+    return total;
   }
 
   private async generateNextOrderNumber(): Promise<string> {
