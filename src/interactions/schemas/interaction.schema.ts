@@ -56,6 +56,9 @@ export class Interaction extends Document {
   @Prop()
   nextFollowUpDate?: Date;
 
+  @Prop()
+  contactPerson?: string;
+
   @Prop({ type: Types.ObjectId, ref: 'User' })
   createdBy: Types.ObjectId;
 

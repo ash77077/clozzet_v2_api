@@ -31,12 +31,13 @@ export class CustomersService {
   async findAll(): Promise<Customer[]> {
     return await this.customerModel
       .find({ isActive: true })
+      .populate('createdBy', 'firstName lastName')
       .sort({ lastContactedAt: -1 })
       .exec();
   }
 
   async findById(id: string): Promise<Customer> {
-    const customer = await this.customerModel.findById(id).exec();
+    const customer = await this.customerModel.findById(id).populate('createdBy', 'firstName lastName').exec();
     if (!customer) {
       throw new NotFoundException(`Customer with ID ${id} not found`);
     }
@@ -87,6 +88,7 @@ export class CustomersService {
   async findByStatus(status: CustomerStatus): Promise<Customer[]> {
     return await this.customerModel
       .find({ status, isActive: true })
+      .populate('createdBy', 'firstName lastName')
       .sort({ lastContactedAt: -1 })
       .exec();
   }
@@ -98,6 +100,7 @@ export class CustomersService {
         isActive: true,
         nextFollowUpAt: { $lte: today },
       })
+      .populate('createdBy', 'firstName lastName')
       .sort({ nextFollowUpAt: 1 })
       .exec();
   }
