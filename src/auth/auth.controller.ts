@@ -5,7 +5,10 @@ import {
   HttpStatus,
   HttpCode,
   ValidationPipe,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import {
   ApiTags,
   ApiOperation,
@@ -72,6 +75,18 @@ export class AuthController {
     @Body(ValidationPipe) loginDto: LoginDto,
   ): Promise<AuthResponseDto> {
     return this.authService.login(loginDto);
+  }
+
+  @Post('change-password')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Change password on first login' })
+  @ApiResponse({ status: 200, description: 'Password changed successfully' })
+  async changePassword(
+    @Request() req: any,
+    @Body() body: { newPassword: string },
+  ) {
+    return this.authService.changePassword(req.user.userId || req.user.sub, body.newPassword);
   }
 
   @Post('refresh')
