@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './users.service';
+import { UserEmailService } from './user-email.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -25,7 +26,10 @@ import * as bcrypt from 'bcrypt';
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly userEmailService: UserEmailService,
+  ) {}
 
   @Get()
   @Roles(Role.ADMIN, Role.MANAGER)
@@ -39,6 +43,22 @@ export class UsersController {
       const { password, ...userWithoutPassword } = user.toObject();
       return userWithoutPassword;
     });
+  }
+
+  @Post('send-reset-email')
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Send password reset email to user' })
+  async sendResetEmail(
+    @Body() body: { email: string; firstName: string; temporaryPassword: string },
+  ) {
+    try {
+      await this.userEmailService.sendPasswordResetEmail(body.email, body.firstName, body.temporaryPassword);
+      return { message: 'Reset email sent successfully' };
+    } catch (err) {
+      console.error('Failed to send reset email:', err.message);
+      return { message: 'Email could not be sent', error: err.message };
+    }
   }
 
   @Get(':id')
@@ -63,14 +83,26 @@ export class UsersController {
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 403, description: 'Forbidden - insufficient permissions' })
   async create(@Body() createUserDto: CreateUserDto) {
-    // Hash password before saving
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    const userWithHashedPassword = {
+    const temporaryPassword = createUserDto.password;
+    const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
+
+    const user = await this.usersService.create({
       ...createUserDto,
       password: hashedPassword,
-    };
+      mustChangePassword: true,
+    } as any);
 
-    const user = await this.usersService.create(userWithHashedPassword);
+    // Send welcome email with the plain-text temporary password
+    try {
+      await this.userEmailService.sendWelcomeEmail(
+        createUserDto.email,
+        createUserDto.firstName,
+        temporaryPassword,
+      );
+    } catch (err) {
+      console.error('Failed to send welcome email:', err.message);
+    }
+
     const { password, ...userWithoutPassword } = user.toObject();
     return userWithoutPassword;
   }
@@ -82,9 +114,9 @@ export class UsersController {
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 403, description: 'Forbidden - insufficient permissions' })
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    // Hash password if it's being updated
     if (updateUserDto.password) {
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
+      (updateUserDto as any).mustChangePassword = true;
     }
 
     const user = await this.usersService.update(id, updateUserDto);

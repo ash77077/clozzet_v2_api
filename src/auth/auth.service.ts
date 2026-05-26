@@ -101,9 +101,19 @@ export class AuthService {
         lastName: user.lastName,
         role: user.role,
         company,
+        mustChangePassword: (user as any).mustChangePassword ?? false,
       },
       ...tokens,
     };
+  }
+
+  async changePassword(userId: string, newPassword: string) {
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    await this.usersService.update(userId, {
+      password: hashedPassword,
+      mustChangePassword: false,
+    } as any);
+    return { message: 'Password changed successfully' };
   }
 
   async refreshToken(refreshToken: string) {

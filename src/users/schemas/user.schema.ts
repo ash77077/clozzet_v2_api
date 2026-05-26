@@ -65,6 +65,9 @@ export class User {
   @Prop({ default: true })
   isActive: boolean;
 
+  @Prop({ default: true })
+  mustChangePassword: boolean;
+
   createdAt: Date;
   updatedAt: Date;
 }
