@@ -35,4 +35,8 @@ export class CreateInteractionDto {
   @IsISO8601({ strict: true })
   @IsOptional()
   nextFollowUpDate?: string;
+
+  @IsString()
+  @IsOptional()
+  contactPerson?: string;
 }
