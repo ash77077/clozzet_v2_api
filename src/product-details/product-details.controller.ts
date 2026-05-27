@@ -21,6 +21,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiConsumes } from '@nestjs/swagger';
 import { ProductDetailsService } from './product-details.service';
+import { ProductDetailsDeadlineScheduler } from './product-details-deadline.scheduler';
 import { CreateProductDetailsDto } from './dto/create-product-details.dto';
 import { ProductDetails } from './schemas/product-details.schema';
 import { multerConfig } from './config/multer.config';
@@ -31,7 +32,18 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 @ApiTags('product-details')
 @Controller('product-details')
 export class ProductDetailsController {
-  constructor(private readonly productDetailsService: ProductDetailsService) {}
+  constructor(
+    private readonly productDetailsService: ProductDetailsService,
+    private readonly deadlineScheduler: ProductDetailsDeadlineScheduler,
+  ) {}
+
+  @Post('test-deadline-reminder')
+  @HttpCode(200)
+  async testDeadlineReminder(@Query('days') days?: string) {
+    const daysAhead = days ? parseInt(days, 10) : 2;
+    await this.deadlineScheduler.sendDeadlineReminders(daysAhead);
+    return { success: true, message: `Deadline reminder check triggered for ${daysAhead} day(s) ahead` };
+  }
 
   @Post('upload-files')
   @UseInterceptors(FilesInterceptor('files', 20, multerConfig))
