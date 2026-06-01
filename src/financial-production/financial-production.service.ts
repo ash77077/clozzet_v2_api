@@ -7,6 +7,7 @@ import { FabricInventoryHistory } from './schemas/fabric-inventory-history.schem
 import { ProductDefinition } from './schemas/product-definition.schema';
 import { ProductionRun } from './schemas/production-run.schema';
 import { MonthlyExpenseReport } from './schemas/monthly-expense-report.schema';
+import { CostScenario } from './schemas/cost-scenario.schema';
 
 @Injectable()
 export class FinancialProductionService {
@@ -19,6 +20,7 @@ export class FinancialProductionService {
     @InjectModel(ProductDefinition.name) private productDefModel: Model<ProductDefinition>,
     @InjectModel(ProductionRun.name) private productionRunModel: Model<ProductionRun>,
     @InjectModel(MonthlyExpenseReport.name) private expenseModel: Model<MonthlyExpenseReport>,
+    @InjectModel(CostScenario.name) private costScenarioModel: Model<CostScenario>,
   ) {}
 
   // ==================== ACCESSORY ITEMS ====================
@@ -495,6 +497,46 @@ export class FinancialProductionService {
     const result = await this.expenseModel.findByIdAndDelete(id).exec();
     if (!result) {
       throw new NotFoundException(`Monthly expense with ID ${id} not found`);
+    }
+  }
+
+  // ==================== COST SCENARIOS ====================
+  async createCostScenario(data: any): Promise<CostScenario> {
+    try {
+      const scenario = new this.costScenarioModel(data);
+      return await scenario.save();
+    } catch (error) {
+      this.logger.error(`Failed to create cost scenario: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async getAllCostScenarios(): Promise<CostScenario[]> {
+    return await this.costScenarioModel.find().sort({ createdAt: -1 }).exec();
+  }
+
+  async getCostScenarioById(id: string): Promise<CostScenario> {
+    const scenario = await this.costScenarioModel.findById(id).exec();
+    if (!scenario) {
+      throw new NotFoundException(`Cost scenario with ID ${id} not found`);
+    }
+    return scenario;
+  }
+
+  async updateCostScenario(id: string, data: any): Promise<CostScenario> {
+    const scenario = await this.costScenarioModel
+      .findByIdAndUpdate(id, data, { new: true })
+      .exec();
+    if (!scenario) {
+      throw new NotFoundException(`Cost scenario with ID ${id} not found`);
+    }
+    return scenario;
+  }
+
+  async deleteCostScenario(id: string): Promise<void> {
+    const result = await this.costScenarioModel.findByIdAndDelete(id).exec();
+    if (!result) {
+      throw new NotFoundException(`Cost scenario with ID ${id} not found`);
     }
   }
 }

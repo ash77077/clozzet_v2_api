@@ -14,6 +14,7 @@ import {
   MonthlyExpenseReport,
   MonthlyExpenseReportSchema,
 } from './schemas/monthly-expense-report.schema';
+import { CostScenario, CostScenarioSchema } from './schemas/cost-scenario.schema';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import {
       { name: ProductDefinition.name, schema: ProductDefinitionSchema },
       { name: ProductionRun.name, schema: ProductionRunSchema },
       { name: MonthlyExpenseReport.name, schema: MonthlyExpenseReportSchema },
+      { name: CostScenario.name, schema: CostScenarioSchema },
     ]),
   ],
   controllers: [FinancialProductionController],
