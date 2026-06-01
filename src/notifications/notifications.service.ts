@@ -124,6 +124,12 @@ export class NotificationsService {
     return result;
   }
 
+  async deleteByOrderId(orderId: string): Promise<void> {
+    await this.notificationModel
+      .deleteMany({ orderId: new Types.ObjectId(orderId) })
+      .exec();
+  }
+
   async getUnreadCount(userId: string): Promise<number> {
     return this.notificationModel
       .countDocuments({ userId: new Types.ObjectId(userId), read: false })

@@ -5,6 +5,7 @@ import {ProductDetails, ProductDetailsDocument} from './schemas/product-details.
 import {CreateProductDetailsDto} from './dto/create-product-details.dto';
 import {ProductDetailsEmailService} from './product-details-email.service';
 import {NotificationsGateway} from '../notifications/notifications.gateway';
+import {NotificationsService} from '../notifications/notifications.service';
 
 @Injectable()
 export class ProductDetailsService {
@@ -14,6 +15,8 @@ export class ProductDetailsService {
     private productDetailsEmailService: ProductDetailsEmailService,
     @Inject(forwardRef(() => NotificationsGateway))
     private notificationsGateway: NotificationsGateway,
+    @Inject(forwardRef(() => NotificationsService))
+    private notificationsService: NotificationsService,
   ) {}
 
   async create(createProductDetailsDto: CreateProductDetailsDto): Promise<ProductDetails> {
@@ -243,10 +246,12 @@ export class ProductDetailsService {
 
   async delete(id: string): Promise<void> {
     const result = await this.productDetailsModel.findByIdAndDelete(id).exec();
-    
+
     if (!result) {
       throw new BadRequestException(`Product details with ID ${id} not found`);
     }
+
+    await this.notificationsService.deleteByOrderId(id);
   }
 
   async getStatistics(): Promise<any> {
