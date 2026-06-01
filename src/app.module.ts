@@ -24,7 +24,7 @@ import { OrderRequestsModule } from './order-requests/order-requests.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { CustomersModule } from './customers/customers.module';
 import { InteractionsModule } from './interactions/interactions.module';
-import { AiModule } from './ai/ai.module';
+// import { AiModule } from './ai/ai.module';
 import { ExpoSalesModule } from './expo-sales/expo-sales.module';
 
 @Module({
@@ -60,7 +60,7 @@ import { ExpoSalesModule } from './expo-sales/expo-sales.module';
     NotificationsModule,
     CustomersModule,
     InteractionsModule,
-    AiModule,
+    // AiModule,
     ExpoSalesModule,
   ],
   controllers: [AppController],
