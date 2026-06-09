@@ -3,7 +3,11 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet'
+import { EventEmitter } from 'events';
 import { AppModule } from './app.module';
+
+// Raise the global default so modules with many DB models don't trigger the warning
+EventEmitter.defaultMaxListeners = 50;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

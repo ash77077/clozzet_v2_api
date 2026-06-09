@@ -50,10 +50,28 @@ export class ProductDetailsEmailService {
     });
   }
 
+  private getEffectiveClothType(data: CreateProductDetailsDto): string {
+    if (data.clothType) return data.clothType;
+    if (data.products && data.products.length > 0 && data.products[0].clothType) {
+      return data.products[0].clothType;
+    }
+    return 'N/A';
+  }
+
+  private getEffectiveTextileType(data: CreateProductDetailsDto): string {
+    if (data.textileType) return data.textileType;
+    if (data.products && data.products.length > 0 && data.products[0].textileType) {
+      return data.products[0].textileType;
+    }
+    return 'N/A';
+  }
+
   private generateEmailTemplate(data: CreateProductDetailsDto): string {
     const sizeQuantitiesTable = data.sizeQuantities ? this.generateSizeQuantitiesTable(data.sizeQuantities) : '<p>No size quantities specified</p>';
     const specificDetails = this.generateSpecificDetails(data);
     const priorityBadge = this.getPriorityBadge(data.priority);
+    const clothType = this.getEffectiveClothType(data);
+    const textileType = this.getEffectiveTextileType(data);
     
     return `
     <!DOCTYPE html>
@@ -117,6 +135,12 @@ export class ProductDetailsEmailService {
                             <div class="detail-label">Order Number</div>
                             <div class="detail-value">${data.orderNumber}</div>
                         </div>
+                        ${data.companyName ? `
+                        <div class="detail-item">
+                            <div class="detail-label">Company Name</div>
+                            <div class="detail-value">${data.companyName}</div>
+                        </div>
+                        ` : ''}
                         <div class="detail-item">
                             <div class="detail-label">Client Name</div>
                             <div class="detail-value">${data.clientName}</div>
@@ -125,9 +149,15 @@ export class ProductDetailsEmailService {
                             <div class="detail-label">Sales Person</div>
                             <div class="detail-value">${data.salesPerson}</div>
                         </div>
+                        ${data.startDate ? `
+                        <div class="detail-item">
+                            <div class="detail-label">Start Date</div>
+                            <div class="detail-value">${new Date(data.startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
+                        </div>
+                        ` : ''}
                         <div class="detail-item">
                             <div class="detail-label">Deadline</div>
-                            <div class="detail-value">${data.deadline}</div>
+                            <div class="detail-value">${new Date(data.deadline).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Total Quantity</div>
@@ -142,14 +172,65 @@ export class ProductDetailsEmailService {
 
                 <div class="section">
                     <div class="section-title">👕 Product Specifications</div>
+                    ${data.products && data.products.length > 0 ? data.products.map((product, idx) => `
+                    <div style="margin-bottom: 20px; border: 1px solid #e9ecef; border-radius: 8px; padding: 15px;">
+                        ${(data.products?.length ?? 0) > 1 ? `<div style="font-weight: bold; color: #3498db; margin-bottom: 10px;">Product ${idx + 1}</div>` : ''}
+                        <div class="details-grid">
+                            <div class="detail-item">
+                                <div class="detail-label">Cloth Type</div>
+                                <div class="detail-value">${product.clothType || 'N/A'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Textile Type</div>
+                                <div class="detail-value">${product.textileType || 'N/A'}</div>
+                            </div>
+                            ${product.designMethod ? `
+                            <div class="detail-item">
+                                <div class="detail-label">Design Method</div>
+                                <div class="detail-value">${product.designMethod}</div>
+                            </div>
+                            ` : ''}
+                            ${product.colors ? `
+                            <div class="detail-item">
+                                <div class="detail-label">Colors</div>
+                                <div class="detail-value">${product.colors}</div>
+                            </div>
+                            ` : ''}
+                            ${product.customColorDetails ? `
+                            <div class="detail-item">
+                                <div class="detail-label">Custom Color Details</div>
+                                <div class="detail-value">${product.customColorDetails}</div>
+                            </div>
+                            ` : ''}
+                            ${product.logoPosition ? `
+                            <div class="detail-item">
+                                <div class="detail-label">Logo Position</div>
+                                <div class="detail-value">${product.logoPosition}</div>
+                            </div>
+                            ` : ''}
+                            ${product.logoSize ? `
+                            <div class="detail-item">
+                                <div class="detail-label">Logo Size</div>
+                                <div class="detail-value">${product.logoSize}</div>
+                            </div>
+                            ` : ''}
+                            ${product.comments ? `
+                            <div class="detail-item">
+                                <div class="detail-label">Comments</div>
+                                <div class="detail-value">${product.comments}</div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    `).join('') : `
                     <div class="details-grid">
                         <div class="detail-item">
                             <div class="detail-label">Cloth Type</div>
-                            <div class="detail-value">${data.clothType}</div>
+                            <div class="detail-value">${clothType}</div>
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Textile Type</div>
-                            <div class="detail-value">${data.textileType}</div>
+                            <div class="detail-value">${textileType}</div>
                         </div>
                         ${data.fabricWeight ? `
                         <div class="detail-item">
@@ -162,41 +243,33 @@ export class ProductDetailsEmailService {
                             <div class="detail-label">Colors</div>
                             <div class="detail-value">
                                 <div class="colors-list">
-                                    ${data.colors.map(color => `<span class="color-item">${color}</span>`).join('')}
+                                    ${data.colors.map((color: string) => `<span class="color-item">${color}</span>`).join('')}
                                 </div>
                                 ${data.customColorDetails ? `<div style="margin-top: 10px;"><strong>Custom Color:</strong> ${data.customColorDetails}</div>` : ''}
                             </div>
                         </div>
                         ` : ''}
                     </div>
+                    `}
                 </div>
 
                 <div class="section">
                     <div class="section-title">📏 Size Quantities</div>
-                    ${sizeQuantitiesTable}
+                    ${data.products && data.products.length > 0
+                      ? data.products.map((product: any, idx: number) =>
+                          product.sizes ? `
+                          ${(data.products?.length ?? 0) > 1 ? `<div style="font-weight: bold; color: #3498db; margin-bottom: 8px; margin-top: 12px;">Product ${idx + 1} — ${product.clothType || ''}</div>` : ''}
+                          ${this.generateProductSizesTable(product.sizes)}
+                          ` : ''
+                        ).join('')
+                      : sizeQuantitiesTable
+                    }
                 </div>
 
+                ${(data.logoFiles?.length || data.designFiles?.length || data.referenceImages?.length) ? `
                 <div class="section">
-                    <div class="section-title">🎨 Design</div>
+                    <div class="section-title">🎨 Design Files</div>
                     <div class="details-grid">
-                        ${data.designMethod ? `
-                        <div class="detail-item">
-                            <div class="detail-label">Design Method</div>
-                            <div class="detail-value">${data.designMethod}</div>
-                        </div>
-                        ` : ''}
-                        ${data.logoPosition ? `
-                        <div class="detail-item">
-                            <div class="detail-label">Logo Position</div>
-                            <div class="detail-value">${data.logoPosition}</div>
-                        </div>
-                        ` : ''}
-                        ${data.logoSize ? `
-                        <div class="detail-item">
-                            <div class="detail-label">Logo Size</div>
-                            <div class="detail-value">${data.logoSize}</div>
-                        </div>
-                        ` : ''}
                         ${data.logoFiles && data.logoFiles.length > 0 ? `
                         <div class="detail-item">
                             <div class="detail-label">Logo Files</div>
@@ -223,6 +296,7 @@ export class ProductDetailsEmailService {
                         ` : ''}
                     </div>
                 </div>
+                ` : ''}
 
                 ${specificDetails ? `
                 <div class="section">
@@ -233,7 +307,7 @@ export class ProductDetailsEmailService {
                 </div>
                 ` : ''}
 
-                ${data.specialInstructions || data.shippingAddress ? `
+                ${data.specialInstructions || data.packagingRequirements || data.shippingAddress ? `
                 <div class="section">
                     <div class="section-title">📝 Additional Details</div>
                     <div class="details-grid">
@@ -241,6 +315,12 @@ export class ProductDetailsEmailService {
                         <div class="detail-item">
                             <div class="detail-label">Special Instructions</div>
                             <div class="detail-value">${data.specialInstructions}</div>
+                        </div>
+                        ` : ''}
+                        ${data.packagingRequirements ? `
+                        <div class="detail-item">
+                            <div class="detail-label">Packaging Requirements</div>
+                            <div class="detail-value">${data.packagingRequirements}</div>
                         </div>
                         ` : ''}
                         ${data.shippingAddress ? `
@@ -296,6 +376,50 @@ export class ProductDetailsEmailService {
     `;
   }
 
+  private generateProductSizesTable(sizes: any): string {
+    const sizeKeys = ['xs', 's', 'm', 'l', 'xl', 'xxl', 'xxxl', 'xxxxl',
+                      's1_2', 's3_4', 's5_6', 's7_8', 's9_10', 's11_12', 's13_14', 's15_16'];
+    const sizeLabels: Record<string, string> = {
+      xs: 'XS', s: 'S', m: 'M', l: 'L', xl: 'XL', xxl: 'XXL', xxxl: 'XXXL', xxxxl: 'XXXXL',
+      s1_2: '1-2', s3_4: '3-4', s5_6: '5-6', s7_8: '7-8',
+      s9_10: '9-10', s11_12: '11-12', s13_14: '13-14', s15_16: '15-16',
+    };
+
+    const activeRows = sizeKeys.filter(key => {
+      const s = sizes[key];
+      return s && ((s.men || 0) + (s.women || 0) + (s.uni || 0)) > 0;
+    });
+
+    if (activeRows.length === 0) return '<p style="color:#999;">No size quantities specified</p>';
+
+    let grandTotal = 0;
+    const rows = activeRows.map(key => {
+      const s = sizes[key];
+      const men = s.men || 0;
+      const women = s.women || 0;
+      const uni = s.uni || 0;
+      const rowTotal = men + women + uni;
+      grandTotal += rowTotal;
+      return `<tr><td>${sizeLabels[key] || key.toUpperCase()}</td><td>${men}</td><td>${women}</td><td>${uni}</td><td><strong>${rowTotal}</strong></td></tr>`;
+    }).join('');
+
+    return `
+      <table class="size-table">
+        <thead>
+          <tr>
+            <th>Size</th><th>Men</th><th>Women</th><th>Uni</th><th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+          <tr class="total-row">
+            <td><strong>TOTAL</strong></td><td></td><td></td><td></td><td><strong>${grandTotal}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+  }
+
   private generateSpecificDetails(data: CreateProductDetailsDto): string {
     const details: string[] = [];
 
@@ -343,30 +467,32 @@ export class ProductDetailsEmailService {
 
     return `
       <div class="file-gallery">
-        ${files.map(filename => {
-          const downloadUrl = `${this.apiBaseUrl}/product-details/files/${filename}`;
-          const previewUrl = `${this.apiBaseUrl}/product-details/preview/${filename}`;
-          const isImage = this.isImageFile(filename);
-          
+        ${files.map(fileRef => {
+          const isFullUrl = fileRef.startsWith('http://') || fileRef.startsWith('https://');
+          const displayName = isFullUrl ? fileRef.split('/').pop() || fileRef : fileRef;
+          const downloadUrl = isFullUrl ? fileRef : `${this.apiBaseUrl}/product-details/files/${fileRef}`;
+          const previewUrl = isFullUrl ? fileRef : `${this.apiBaseUrl}/product-details/preview/${fileRef}`;
+          const isImage = this.isImageFile(fileRef);
+
           return `
             <div class="file-item">
               <div class="file-card">
                 <div class="file-header">
                   <span style="font-size: 18px;">${icon}</span>
-                  <span>${filename}</span>
+                  <span style="font-size:12px; word-break:break-all;">${displayName}</span>
                 </div>
-                
+
                 ${isImage ? `
                   <div style="text-align: center;">
-                    <img src="${previewUrl}" alt="${filename}" class="file-preview" style="max-width: 100%; height: auto; max-height: 200px; border-radius: 6px; border: 1px solid #ddd;" />
+                    <img src="${previewUrl}" alt="${displayName}" class="file-preview" style="max-width: 100%; height: auto; max-height: 200px; border-radius: 6px; border: 1px solid #ddd;" />
                   </div>
                 ` : `
                   <div style="text-align: center; padding: 40px 20px; background-color: #f8f9fa; border-radius: 6px; border: 1px dashed #bdc3c7;">
-                    <div style="font-size: 32px; margin-bottom: 10px;">${this.getFileIcon(filename)}</div>
-                    <div style="font-size: 14px; color: #7f8c8d;">Click to view ${this.getFileType(filename)}</div>
+                    <div style="font-size: 32px; margin-bottom: 10px;">${this.getFileIcon(fileRef)}</div>
+                    <div style="font-size: 14px; color: #7f8c8d;">Click to view ${this.getFileType(fileRef)}</div>
                   </div>
                 `}
-                
+
                 <div class="file-actions">
                   <a href="${downloadUrl}" class="file-action download-btn" style="background-color: #3498db; color: white; text-decoration: none;">
                     📥 Download
