@@ -32,6 +32,10 @@ import {
   CreateMonthlyExpenseReportDto,
   UpdateMonthlyExpenseReportDto,
 } from './dto/create-monthly-expense.dto';
+import {
+  CreateCostScenarioDto,
+  UpdateCostScenarioDto,
+} from './dto/cost-scenario.dto';
 
 @Controller('financial-production')
 export class FinancialProductionController {
@@ -467,6 +471,75 @@ export class FinancialProductionController {
         success: true,
         message: 'Monthly expense deleted successfully',
       };
+    } catch (error) {
+      throw new HttpException(
+        { success: false, message: error.message },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  // ==================== COST SCENARIOS ====================
+  @Post('cost-scenarios')
+  async createCostScenario(@Body() dto: CreateCostScenarioDto) {
+    try {
+      const scenario = await this.financialService.createCostScenario(dto);
+      return { success: true, data: scenario };
+    } catch (error) {
+      throw new HttpException(
+        { success: false, message: error.message },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  @Get('cost-scenarios')
+  async getAllCostScenarios() {
+    try {
+      const scenarios = await this.financialService.getAllCostScenarios();
+      return { success: true, data: scenarios };
+    } catch (error) {
+      throw new HttpException(
+        { success: false, message: error.message },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('cost-scenarios/:id')
+  async getCostScenarioById(@Param('id') id: string) {
+    try {
+      const scenario = await this.financialService.getCostScenarioById(id);
+      return { success: true, data: scenario };
+    } catch (error) {
+      throw new HttpException(
+        { success: false, message: error.message },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+  }
+
+  @Put('cost-scenarios/:id')
+  async updateCostScenario(
+    @Param('id') id: string,
+    @Body() dto: UpdateCostScenarioDto,
+  ) {
+    try {
+      const scenario = await this.financialService.updateCostScenario(id, dto);
+      return { success: true, data: scenario };
+    } catch (error) {
+      throw new HttpException(
+        { success: false, message: error.message },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  @Delete('cost-scenarios/:id')
+  async deleteCostScenario(@Param('id') id: string) {
+    try {
+      await this.financialService.deleteCostScenario(id);
+      return { success: true, message: 'Cost scenario deleted successfully' };
     } catch (error) {
       throw new HttpException(
         { success: false, message: error.message },
