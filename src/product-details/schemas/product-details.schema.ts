@@ -23,7 +23,7 @@ export class ProductDetails {
   @Prop({ required: true })
   deadline: string;
 
-  @Prop({ required: true, min: 1 })
+  @Prop({ min: 0, default: 0 })
   quantity: number;
 
   @Prop({ required: true, enum: ['low', 'normal', 'high', 'urgent'] })
@@ -57,7 +57,15 @@ export class ProductDetails {
           xl: { men: Number, women: Number, uni: Number },
           xxl: { men: Number, women: Number, uni: Number },
           xxxl: { men: Number, women: Number, uni: Number },
-          xxxxl: { men: Number, women: Number, uni: Number }
+          xxxxl: { men: Number, women: Number, uni: Number },
+          s1_2: { men: Number, women: Number, uni: Number },
+          s3_4: { men: Number, women: Number, uni: Number },
+          s5_6: { men: Number, women: Number, uni: Number },
+          s7_8: { men: Number, women: Number, uni: Number },
+          s9_10: { men: Number, women: Number, uni: Number },
+          s11_12: { men: Number, women: Number, uni: Number },
+          s13_14: { men: Number, women: Number, uni: Number },
+          s15_16: { men: Number, women: Number, uni: Number }
         }
       }
     }]
@@ -82,6 +90,14 @@ export class ProductDetails {
       xxl?: { men?: number; women?: number; uni?: number };
       xxxl?: { men?: number; women?: number; uni?: number };
       xxxxl?: { men?: number; women?: number; uni?: number };
+      s1_2?: { men?: number; women?: number; uni?: number };
+      s3_4?: { men?: number; women?: number; uni?: number };
+      s5_6?: { men?: number; women?: number; uni?: number };
+      s7_8?: { men?: number; women?: number; uni?: number };
+      s9_10?: { men?: number; women?: number; uni?: number };
+      s11_12?: { men?: number; women?: number; uni?: number };
+      s13_14?: { men?: number; women?: number; uni?: number };
+      s15_16?: { men?: number; women?: number; uni?: number };
     };
   }>;
 
