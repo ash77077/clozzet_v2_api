@@ -377,12 +377,27 @@ export class ProductDetailsEmailService {
   }
 
   private generateProductSizesTable(sizes: any): string {
-    const sizeKeys = ['xs', 's', 'm', 'l', 'xl', 'xxl', 'xxxl', 'xxxxl',
-                      's1_2', 's3_4', 's5_6', 's7_8', 's9_10', 's11_12', 's13_14', 's15_16'];
+    const standardKeys = ['xs', 's', 'm', 'l', 'xl', 'xxl', 'xxxl', 'xxxxl',
+                          's1_2', 's3_4', 's5_6', 's7_8', 's9_10', 's11_12', 's13_14', 's15_16'];
     const sizeLabels: Record<string, string> = {
       xs: 'XS', s: 'S', m: 'M', l: 'L', xl: 'XL', xxl: 'XXL', xxxl: 'XXXL', xxxxl: 'XXXXL',
       s1_2: '1-2', s3_4: '3-4', s5_6: '5-6', s7_8: '7-8',
       s9_10: '9-10', s11_12: '11-12', s13_14: '13-14', s15_16: '15-16',
+    };
+
+    const knownSet = new Set(standardKeys);
+    // Combine standard order first, then any extra custom keys
+    const sizeKeys = [
+      ...standardKeys,
+      ...Object.keys(sizes || {}).filter(k => !knownSet.has(k)),
+    ];
+
+    // Derive label for custom keys (e.g. custom_5xl → 5XL)
+    const getLabel = (key: string): string => {
+      if (sizeLabels[key]) return sizeLabels[key];
+      return key.startsWith('custom_')
+        ? key.replace('custom_', '').replace(/_/g, ' ').toUpperCase()
+        : key.toUpperCase();
     };
 
     const activeRows = sizeKeys.filter(key => {
@@ -400,7 +415,7 @@ export class ProductDetailsEmailService {
       const uni = s.uni || 0;
       const rowTotal = men + women + uni;
       grandTotal += rowTotal;
-      return `<tr><td>${sizeLabels[key] || key.toUpperCase()}</td><td>${men}</td><td>${women}</td><td>${uni}</td><td><strong>${rowTotal}</strong></td></tr>`;
+      return `<tr><td>${getLabel(key)}</td><td>${men}</td><td>${women}</td><td>${uni}</td><td><strong>${rowTotal}</strong></td></tr>`;
     }).join('');
 
     return `
