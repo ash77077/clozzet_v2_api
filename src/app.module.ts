@@ -26,6 +26,7 @@ import { CustomersModule } from './customers/customers.module';
 import { InteractionsModule } from './interactions/interactions.module';
 import { AiModule } from './ai/ai.module';
 import { ExpoSalesModule } from './expo-sales/expo-sales.module';
+import { WeddingGuestsModule } from './wedding-guests/wedding-guests.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { ExpoSalesModule } from './expo-sales/expo-sales.module';
     InteractionsModule,
     AiModule,
     ExpoSalesModule,
+    WeddingGuestsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
