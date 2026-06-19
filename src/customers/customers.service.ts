@@ -56,15 +56,33 @@ export class CustomersService {
     return customer;
   }
 
-  async remove(id: string): Promise<void> {
-    // Soft delete
+  async remove(id: string, userId?: string, reason?: string): Promise<void> {
     const result = await this.customerModel
-      .findByIdAndUpdate(id, { isActive: false }, { new: true })
+      .findByIdAndUpdate(id, { isActive: false, deletedBy: userId || null, deleteReason: reason || null }, { new: true })
       .exec();
+    if (!result) throw new NotFoundException(`Customer with ID ${id} not found`);
+  }
 
-    if (!result) {
-      throw new NotFoundException(`Customer with ID ${id} not found`);
-    }
+  async findDeleted(): Promise<Customer[]> {
+    return await this.customerModel
+      .find({ isActive: false })
+      .populate('createdBy', 'firstName lastName')
+      .populate('deletedBy', 'firstName lastName')
+      .sort({ updatedAt: -1 })
+      .exec();
+  }
+
+  async restore(id: string): Promise<Customer> {
+    const result = await this.customerModel
+      .findByIdAndUpdate(id, { isActive: true }, { new: true })
+      .exec();
+    if (!result) throw new NotFoundException(`Customer with ID ${id} not found`);
+    return result;
+  }
+
+  async hardDelete(id: string): Promise<void> {
+    const result = await this.customerModel.findByIdAndDelete(id).exec();
+    if (!result) throw new NotFoundException(`Customer with ID ${id} not found`);
   }
 
   async deleteDuplicatesByCompanyName(companyName: string): Promise<number> {
