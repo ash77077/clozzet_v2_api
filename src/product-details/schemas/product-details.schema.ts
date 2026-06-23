@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 
 export type ProductDetailsDocument = ProductDetails & Document;
 
@@ -48,26 +48,7 @@ export class ProductDetails {
       comments: { type: String },
       costPricePerUnit: { type: Number },
       sellingPricePerUnit: { type: Number },
-      sizes: {
-        type: {
-          xs: { men: Number, women: Number, uni: Number },
-          s: { men: Number, women: Number, uni: Number },
-          m: { men: Number, women: Number, uni: Number },
-          l: { men: Number, women: Number, uni: Number },
-          xl: { men: Number, women: Number, uni: Number },
-          xxl: { men: Number, women: Number, uni: Number },
-          xxxl: { men: Number, women: Number, uni: Number },
-          xxxxl: { men: Number, women: Number, uni: Number },
-          s1_2: { men: Number, women: Number, uni: Number },
-          s3_4: { men: Number, women: Number, uni: Number },
-          s5_6: { men: Number, women: Number, uni: Number },
-          s7_8: { men: Number, women: Number, uni: Number },
-          s9_10: { men: Number, women: Number, uni: Number },
-          s11_12: { men: Number, women: Number, uni: Number },
-          s13_14: { men: Number, women: Number, uni: Number },
-          s15_16: { men: Number, women: Number, uni: Number }
-        }
-      }
+      sizes: { type: MongooseSchema.Types.Mixed }
     }]
   })
   products?: Array<{
@@ -81,24 +62,7 @@ export class ProductDetails {
     comments?: string;
     costPricePerUnit?: number;
     sellingPricePerUnit?: number;
-    sizes?: {
-      xs?: { men?: number; women?: number; uni?: number };
-      s?: { men?: number; women?: number; uni?: number };
-      m?: { men?: number; women?: number; uni?: number };
-      l?: { men?: number; women?: number; uni?: number };
-      xl?: { men?: number; women?: number; uni?: number };
-      xxl?: { men?: number; women?: number; uni?: number };
-      xxxl?: { men?: number; women?: number; uni?: number };
-      xxxxl?: { men?: number; women?: number; uni?: number };
-      s1_2?: { men?: number; women?: number; uni?: number };
-      s3_4?: { men?: number; women?: number; uni?: number };
-      s5_6?: { men?: number; women?: number; uni?: number };
-      s7_8?: { men?: number; women?: number; uni?: number };
-      s9_10?: { men?: number; women?: number; uni?: number };
-      s11_12?: { men?: number; women?: number; uni?: number };
-      s13_14?: { men?: number; women?: number; uni?: number };
-      s15_16?: { men?: number; women?: number; uni?: number };
-    };
+    sizes?: Record<string, { men?: number; women?: number; uni?: number }>;
   }>;
 
   // Legacy fields for backward compatibility - kept for existing orders
@@ -209,6 +173,19 @@ export class ProductDetails {
 
   @Prop()
   shippingAddress?: string;
+
+  @Prop({
+    type: String,
+    enum: ['not_paid', 'deposit', 'partial', 'paid'],
+    default: 'not_paid',
+  })
+  paymentStatus?: string;
+
+  @Prop({ type: Number, default: 0 })
+  paidAmount?: number;
+
+  @Prop({ type: Number })
+  expectedRevenue?: number;
 
   @Prop({ type: String })
   createdBy?: string;

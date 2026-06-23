@@ -71,6 +71,12 @@ export class Customer extends Document {
 
   @Prop({ type: Types.ObjectId, ref: 'User', default: null })
   createdBy?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
+  deletedBy?: Types.ObjectId;
+
+  @Prop({ default: null })
+  deleteReason?: string;
 }
 
 export const CustomerSchema = SchemaFactory.createForClass(Customer);

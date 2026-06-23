@@ -103,16 +103,7 @@ export class ProductItemDto {
   })
   @IsOptional()
   @IsObject()
-  sizes?: {
-    xs?: { men?: number; women?: number; uni?: number };
-    s?: { men?: number; women?: number; uni?: number };
-    m?: { men?: number; women?: number; uni?: number };
-    l?: { men?: number; women?: number; uni?: number };
-    xl?: { men?: number; women?: number; uni?: number };
-    xxl?: { men?: number; women?: number; uni?: number };
-    xxxl?: { men?: number; women?: number; uni?: number };
-    xxxxl?: { men?: number; women?: number; uni?: number };
-  };
+  sizes?: Record<string, { men?: number; women?: number; uni?: number }>;
 }
 
 export class CreateProductDetailsDto {
@@ -456,4 +447,19 @@ export class CreateProductDetailsDto {
   @IsOptional()
   @IsString()
   shippingAddress?: string;
+
+  @ApiProperty({ description: 'Payment status', example: 'not_paid', required: false })
+  @IsOptional()
+  @IsString()
+  paymentStatus?: string;
+
+  @ApiProperty({ description: 'Amount already paid by the client', example: 500, required: false })
+  @IsOptional()
+  @IsNumber()
+  paidAmount?: number;
+
+  @ApiProperty({ description: 'Expected total revenue for this order', example: 1500, required: false })
+  @IsOptional()
+  @IsNumber()
+  expectedRevenue?: number;
 }

@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -79,6 +80,18 @@ export class CustomersController {
   }
 
   /**
+   * GET /customers/deleted - List soft-deleted customers (admin only)
+   * Must be before :id routes to avoid param matching
+   */
+  @Get('deleted')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  async findDeleted() {
+    const data = await this.customersService.findDeleted();
+    return { success: true, message: 'Deleted customers retrieved', data };
+  }
+
+  /**
    * GET /customers/:id - Get a single customer by ID
    */
   @Get(':id')
@@ -104,13 +117,36 @@ export class CustomersController {
   }
 
   /**
+   * PATCH /customers/:id/restore - Restore a soft-deleted customer (admin only)
+   */
+  @Patch(':id/restore')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  async restore(@Param('id') id: string) {
+    const data = await this.customersService.restore(id);
+    return { success: true, message: 'Customer restored successfully', data };
+  }
+
+  /**
+   * DELETE /customers/:id/hard - Permanently delete a customer (admin only)
+   */
+  @Delete(':id/hard')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  async hardDelete(@Param('id') id: string) {
+    await this.customersService.hardDelete(id);
+    return { success: true, message: 'Customer permanently deleted', data: null };
+  }
+
+  /**
    * DELETE /customers/:id - Delete (soft delete) a customer
    */
   @Delete(':id')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.MANAGER)
-  async remove(@Param('id') id: string) {
-    await this.customersService.remove(id);
+  async remove(@Param('id') id: string, @Body() body: { reason?: string }, @Req() req: any) {
+    const userId = req.user?.userId;
+    await this.customersService.remove(id, userId, body?.reason);
     return { success: true, message: 'Customer deleted successfully', data: null };
   }
 
