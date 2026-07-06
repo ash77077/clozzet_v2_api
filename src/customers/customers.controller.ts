@@ -117,6 +117,33 @@ export class CustomersController {
   }
 
   /**
+   * PATCH /customers/:id/assign - Reassign a customer to a different user (or unassign)
+   */
+  @Patch(':id/assign')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.MANAGER)
+  async reassign(
+    @Param('id') id: string,
+    @Body() body: { assignedTo: string | null },
+    @Req() req: any,
+  ) {
+    const changedByUserId = req.user?.userId;
+    const data = await this.customersService.reassign(id, body.assignedTo, changedByUserId);
+    return { success: true, message: 'Customer reassigned successfully', data };
+  }
+
+  /**
+   * GET /customers/:id/assignment-log - Get the assignment history for a customer
+   */
+  @Get(':id/assignment-log')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.MANAGER)
+  async getAssignmentLog(@Param('id') id: string) {
+    const customer = await this.customersService.findById(id);
+    return { success: true, data: (customer as any).assignmentLog ?? [] };
+  }
+
+  /**
    * PATCH /customers/:id/restore - Restore a soft-deleted customer (admin only)
    */
   @Patch(':id/restore')

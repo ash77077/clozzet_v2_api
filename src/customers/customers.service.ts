@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Customer, CustomerStatus } from './schemas/customer.schema';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
@@ -9,12 +9,15 @@ import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { InteractionsService } from '../interactions/interactions.service';
 import { InteractionType } from '../interactions/schemas/interaction.schema';
+import { User } from '../users/schemas/user.schema';
 
 @Injectable()
 export class CustomersService {
   constructor(
     @InjectModel(Customer.name)
     private readonly customerModel: Model<Customer>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<User>,
     @Inject(forwardRef(() => InteractionsService))
     private readonly interactionsService: InteractionsService,
   ) {}
@@ -32,16 +35,74 @@ export class CustomersService {
     return await this.customerModel
       .find({ isActive: true })
       .populate('createdBy', 'firstName lastName')
+      .populate('assignedTo', 'firstName lastName')
       .sort({ lastContactedAt: -1 })
       .exec();
   }
 
   async findById(id: string): Promise<Customer> {
-    const customer = await this.customerModel.findById(id).populate('createdBy', 'firstName lastName').exec();
+    const customer = await this.customerModel
+      .findById(id)
+      .populate('createdBy', 'firstName lastName')
+      .populate('assignedTo', 'firstName lastName')
+      .exec();
     if (!customer) {
       throw new NotFoundException(`Customer with ID ${id} not found`);
     }
     return customer;
+  }
+
+  async reassign(
+    customerId: string,
+    newAssigneeId: string | null,
+    changedByUserId: string,
+  ): Promise<Customer> {
+    const customer = await this.customerModel.findById(customerId).exec();
+    if (!customer) throw new NotFoundException(`Customer with ID ${customerId} not found`);
+
+    // Resolve display names for the log
+    const changedByUser = await this.userModel.findById(changedByUserId).exec();
+    const changedByName = changedByUser
+      ? `${changedByUser.firstName} ${changedByUser.lastName}`
+      : 'Unknown';
+
+    const fromUserId = customer.assignedTo ?? null;
+    let fromUserName: string | null = null;
+    if (fromUserId) {
+      const fromUser = await this.userModel.findById(fromUserId).exec();
+      fromUserName = fromUser ? `${fromUser.firstName} ${fromUser.lastName}` : null;
+    }
+
+    let toUserName: string | null = null;
+    if (newAssigneeId) {
+      const toUser = await this.userModel.findById(newAssigneeId).exec();
+      toUserName = toUser ? `${toUser.firstName} ${toUser.lastName}` : null;
+    }
+
+    const logEntry = {
+      changedBy: new Types.ObjectId(changedByUserId),
+      changedByName,
+      fromUser: fromUserId ? new Types.ObjectId(fromUserId.toString()) : null,
+      fromUserName,
+      toUser: newAssigneeId ? new Types.ObjectId(newAssigneeId) : null,
+      toUserName,
+      changedAt: new Date(),
+    };
+
+    const updated = await this.customerModel
+      .findByIdAndUpdate(
+        customerId,
+        {
+          assignedTo: newAssigneeId ? new Types.ObjectId(newAssigneeId) : null,
+          $push: { assignmentLog: logEntry },
+        },
+        { new: true },
+      )
+      .populate('createdBy', 'firstName lastName')
+      .populate('assignedTo', 'firstName lastName')
+      .exec();
+
+    return updated!;
   }
 
   async update(id: string, updateCustomerDto: UpdateCustomerDto): Promise<Customer> {
@@ -67,6 +128,7 @@ export class CustomersService {
     return await this.customerModel
       .find({ isActive: false })
       .populate('createdBy', 'firstName lastName')
+      .populate('assignedTo', 'firstName lastName')
       .populate('deletedBy', 'firstName lastName')
       .sort({ updatedAt: -1 })
       .exec();
@@ -107,6 +169,7 @@ export class CustomersService {
     return await this.customerModel
       .find({ status, isActive: true })
       .populate('createdBy', 'firstName lastName')
+      .populate('assignedTo', 'firstName lastName')
       .sort({ lastContactedAt: -1 })
       .exec();
   }
@@ -119,6 +182,7 @@ export class CustomersService {
         nextFollowUpAt: { $lte: today },
       })
       .populate('createdBy', 'firstName lastName')
+      .populate('assignedTo', 'firstName lastName')
       .sort({ nextFollowUpAt: 1 })
       .exec();
   }
