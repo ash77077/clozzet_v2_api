@@ -15,6 +15,16 @@ export interface ContactPerson {
   linkedinPage?: string;
 }
 
+export interface AssignmentLogEntry {
+  changedBy: Types.ObjectId;
+  changedByName: string;
+  fromUser: Types.ObjectId | null;
+  fromUserName: string | null;
+  toUser: Types.ObjectId | null;
+  toUserName: string | null;
+  changedAt: Date;
+}
+
 @Schema({ timestamps: true })
 export class Customer extends Document {
   @Prop({ required: true })
@@ -71,6 +81,25 @@ export class Customer extends Document {
 
   @Prop({ type: Types.ObjectId, ref: 'User', default: null })
   createdBy?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
+  assignedTo?: Types.ObjectId;
+
+  @Prop({
+    type: [
+      {
+        changedBy: { type: Types.ObjectId, ref: 'User' },
+        changedByName: String,
+        fromUser: { type: Types.ObjectId, ref: 'User', default: null },
+        fromUserName: { type: String, default: null },
+        toUser: { type: Types.ObjectId, ref: 'User', default: null },
+        toUserName: { type: String, default: null },
+        changedAt: { type: Date, default: Date.now },
+      },
+    ],
+    default: [],
+  })
+  assignmentLog?: AssignmentLogEntry[];
 
   @Prop({ type: Types.ObjectId, ref: 'User', default: null })
   deletedBy?: Types.ObjectId;
