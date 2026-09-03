@@ -84,13 +84,31 @@ export class ProductItemDto {
   costPricePerUnit?: number;
 
   @ApiProperty({
-    description: 'Selling price per unit (price charged to customer)',
+    description: 'Selling price per unit (price charged to customer) — legacy single price',
     example: 15.00,
     required: false,
   })
   @IsOptional()
   @IsNumber()
   sellingPricePerUnit?: number;
+
+  @ApiProperty({
+    description: 'Selling price per unit for adult sizes',
+    example: 5000,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  adultSellingPricePerUnit?: number;
+
+  @ApiProperty({
+    description: 'Selling price per unit for children sizes',
+    example: 3500,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  childrenSellingPricePerUnit?: number;
 
   @ApiProperty({
     description: 'Size breakdown for this product',

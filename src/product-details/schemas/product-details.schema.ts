@@ -48,6 +48,8 @@ export class ProductDetails {
       comments: { type: String },
       costPricePerUnit: { type: Number },
       sellingPricePerUnit: { type: Number },
+      adultSellingPricePerUnit: { type: Number },
+      childrenSellingPricePerUnit: { type: Number },
       sizes: { type: MongooseSchema.Types.Mixed }
     }]
   })
@@ -62,6 +64,8 @@ export class ProductDetails {
     comments?: string;
     costPricePerUnit?: number;
     sellingPricePerUnit?: number;
+    adultSellingPricePerUnit?: number;
+    childrenSellingPricePerUnit?: number;
     sizes?: Record<string, { men?: number; women?: number; uni?: number }>;
   }>;
 
