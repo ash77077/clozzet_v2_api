@@ -23,14 +23,14 @@ export class ProductDetailsDeadlineScheduler {
     this.logger.log('Checking for orders with upcoming deadlines...');
 
     try {
-      // Build date strings in Armenia timezone (UTC+4)
+      // Current date in Armenia timezone (UTC+4), formatted as YYYY-MM-DD
       const nowUtc = Date.now() + (4 * 60 * 60 * 1000);
       const todayStr = new Date(nowUtc).toISOString().slice(0, 10);
       const limitStr = new Date(nowUtc + daysAhead * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
       this.logger.log(`Looking for non-done orders with deadline between ${todayStr} and ${limitStr}`);
 
-      // Fetch all non-done orders and filter in JS to handle mixed date formats
+      // Fetch all non-done orders
       const allOrders = await this.productDetailsModel
         .find({ manufacturingStatus: { $nin: ['done'] } })
         .sort({ deadline: 1 })
@@ -53,6 +53,12 @@ export class ProductDetailsDeadlineScheduler {
       this.logger.log(`Found ${orders.length} order(s) with upcoming deadlines.`);
 
       for (const order of orders) {
+        // Skip if we already sent a notification today for this order
+        if (order.deadlineNotifiedDate === todayStr) {
+          this.logger.log(`Skipping order #${order.orderNumber} — already notified today (${todayStr})`);
+          continue;
+        }
+
         const deadlineDate = new Date(order.deadline);
         const daysLeft = Math.round((deadlineDate.getTime() - todayMs) / (24 * 60 * 60 * 1000));
 
@@ -80,6 +86,11 @@ export class ProductDetailsDeadlineScheduler {
 
         const sent = await this.telegramService.sendMessage(message);
         if (sent) {
+          // Stamp today's date so we don't send again if the server restarts
+          await this.productDetailsModel.updateOne(
+            { _id: order._id },
+            { $set: { deadlineNotifiedDate: todayStr } },
+          );
           this.logger.log(`Telegram reminder sent for order #${order.orderNumber} (${daysLeft}d left)`);
         }
       }
