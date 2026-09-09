@@ -55,7 +55,7 @@ export class ProductDetailsDeadlineScheduler {
       for (const order of orders) {
         // Skip if we already sent a notification today for this order
         if (order.deadlineNotifiedDate === todayStr) {
-          this.logger.log(`Skipping order #${order.orderNumber} — already notified today (${todayStr})`);
+          this.logger.log(`Skipping order #${order.orderNumber} — already notified today!!! (${todayStr})`);
           continue;
         }
 
