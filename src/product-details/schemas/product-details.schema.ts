@@ -48,6 +48,8 @@ export class ProductDetails {
       comments: { type: String },
       costPricePerUnit: { type: Number },
       sellingPricePerUnit: { type: Number },
+      adultSellingPricePerUnit: { type: Number },
+      childrenSellingPricePerUnit: { type: Number },
       sizes: { type: MongooseSchema.Types.Mixed }
     }]
   })
@@ -62,6 +64,8 @@ export class ProductDetails {
     comments?: string;
     costPricePerUnit?: number;
     sellingPricePerUnit?: number;
+    adultSellingPricePerUnit?: number;
+    childrenSellingPricePerUnit?: number;
     sizes?: Record<string, { men?: number; women?: number; uni?: number }>;
   }>;
 
@@ -210,6 +214,11 @@ export class ProductDetails {
     author: string;
     content: string;
   }>;
+
+  // Stores the date (YYYY-MM-DD, Armenia TZ) of the last Telegram deadline notification.
+  // Used by the scheduler to ensure at most one notification per order per day.
+  @Prop({ type: String })
+  deadlineNotifiedDate?: string;
 }
 
 export const ProductDetailsSchema = SchemaFactory.createForClass(ProductDetails);

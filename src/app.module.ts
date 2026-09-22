@@ -29,6 +29,7 @@ import { ExpoSalesModule } from './expo-sales/expo-sales.module';
 import { WeddingGuestsModule } from './wedding-guests/wedding-guests.module';
 import { EmployeesModule } from './employees/employees.module';
 import { MeetingsModule } from './meetings/meetings.module';
+import { ManagerKpiModule } from './manager-kpi/manager-kpi.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { MeetingsModule } from './meetings/meetings.module';
     WeddingGuestsModule,
     EmployeesModule,
     MeetingsModule,
+    ManagerKpiModule,
   ],
   controllers: [AppController],
   providers: [AppService],

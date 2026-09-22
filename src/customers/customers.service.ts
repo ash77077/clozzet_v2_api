@@ -22,13 +22,29 @@ export class CustomersService {
     private readonly interactionsService: InteractionsService,
   ) {}
 
-  async create(createCustomerDto: CreateCustomerDto, userId?: string): Promise<Customer> {
+  async create(createCustomerDto: CreateCustomerDto, userId?: string, skipAutoInteraction = false): Promise<Customer> {
     const customerData = {
       ...createCustomerDto,
       createdBy: userId || null,
     };
     const customer = new this.customerModel(customerData);
-    return await customer.save();
+    await customer.save();
+
+    if (!skipAutoInteraction) {
+      // Creating a new lead manually counts as the first interaction
+      await this.interactionsService.create(
+        {
+          customerId: (customer as any)._id.toString(),
+          type: InteractionType.CALL,
+          interactionDate: createCustomerDto.lastContactedAt ?? new Date().toISOString(),
+          summary: `New lead added: ${createCustomerDto.companyName}`,
+          subject: 'Lead created',
+        },
+        userId,
+      );
+    }
+
+    return customer;
   }
 
   async findAll(): Promise<Customer[]> {
@@ -322,8 +338,8 @@ export class CustomersService {
           }
         }
 
-        // Create the customer with userId
-        const customer = await this.create(dto, userId);
+        // Create the customer with userId — skip auto-interaction since we create them from import notes below
+        const customer = await this.create(dto, userId, true);
         result.success++;
         result.importedCustomers.push(customer);
 
