@@ -210,6 +210,22 @@ export class ManagerKpiService {
     return results;
   }
 
+  // ── Sales history ──────────────────────────────────────────────────────────
+
+  async getSalesHistory(managerName: string, year: number, month: number) {
+    const { start, end } = monthRange(year, month);
+    const escaped = managerName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const orders = await this.orderModel
+      .find({
+        salesPerson: { $regex: new RegExp(`^${escaped}$`, 'i') },
+        createdAt:   { $gte: start, $lte: end },
+      })
+      .select('orderNumber companyName clientName expectedRevenue createdAt')
+      .sort({ createdAt: -1 })
+      .lean();
+    return orders;
+  }
+
   // ── Managers list ──────────────────────────────────────────────────────────
 
   async getManagers() {
