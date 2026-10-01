@@ -47,6 +47,18 @@ export class ManagerKpiController {
     return this.kpiService.getAllManagersMonthlyKpi(y, m);
   }
 
+  // GET /manager-kpi/sales-history/:managerName?year=2026&month=7
+  @Get('sales-history/:managerName')
+  getSalesHistory(
+    @Param('managerName') managerName: string,
+    @Query('year')  year:  string,
+    @Query('month') month: string,
+  ) {
+    const y = parseInt(year)  || new Date().getFullYear();
+    const m = isNaN(parseInt(month)) ? new Date().getMonth() : parseInt(month);
+    return this.kpiService.getSalesHistory(decodeURIComponent(managerName), y, m);
+  }
+
   // GET /manager-kpi/monthly/:userId?year=2026&month=7
   @Get('monthly/:userId')
   getMonthly(
