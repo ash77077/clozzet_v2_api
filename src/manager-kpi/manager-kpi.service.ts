@@ -157,7 +157,18 @@ export class ManagerKpiService {
           {
             $match: {
               salesPerson: { $regex: new RegExp(`^${escapedName}$`, 'i') },
-              createdAt:   { $gte: start, $lte: end },
+              status:      { $ne: 'cancelled' },
+              $expr: {
+                $let: {
+                  vars: { d: { $ifNull: ['$startDate', { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }] } },
+                  in: {
+                    $and: [
+                      { $gte: ['$$d', start.toISOString().slice(0, 10)] },
+                      { $lte: ['$$d', end.toISOString().slice(0, 10)] },
+                    ],
+                  },
+                },
+              },
             },
           },
           {
@@ -215,14 +226,25 @@ export class ManagerKpiService {
   async getSalesHistory(managerName: string, year: number, month: number) {
     const { start, end } = monthRange(year, month);
     const escaped = managerName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const startStr = start.toISOString().slice(0, 10);
+    const endStr   = end.toISOString().slice(0, 10);
     const orders = await this.orderModel
-      .find({
-        salesPerson: { $regex: new RegExp(`^${escaped}$`, 'i') },
-        createdAt:   { $gte: start, $lte: end },
-      })
-      .select('orderNumber companyName clientName expectedRevenue createdAt')
-      .sort({ createdAt: -1 })
-      .lean();
+      .aggregate([
+        {
+          $match: {
+            salesPerson: { $regex: new RegExp(`^${escaped}$`, 'i') },
+            status:      { $ne: 'cancelled' },
+            $expr: {
+              $let: {
+                vars: { d: { $ifNull: ['$startDate', { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }] } },
+                in: { $and: [{ $gte: ['$$d', startStr] }, { $lte: ['$$d', endStr] }] },
+              },
+            },
+          },
+        },
+        { $project: { orderNumber: 1, companyName: 1, clientName: 1, expectedRevenue: 1, createdAt: 1, startDate: 1, status: 1 } },
+        { $sort: { createdAt: -1 } },
+      ]);
     return orders;
   }
 

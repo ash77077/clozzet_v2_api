@@ -46,10 +46,24 @@ export class InteractionsService {
     // Update customer's last contacted date
     await this.customersService.updateLastContacted(createInteractionDto.customerId);
 
-    // Update next follow-up date if provided
+    // Update next follow-up date if provided; otherwise clear the overdue
     if (createInteractionDto.nextFollowUpDate) {
       await this.customersService.update(createInteractionDto.customerId, {
         nextFollowUpAt: createInteractionDto.nextFollowUpDate,
+      });
+    } else {
+      // No next follow-up chosen → mark any pending follow-up for this customer as done
+      // and clear the customer's nextFollowUpAt so it no longer appears overdue
+      await this.interactionModel.updateMany(
+        {
+          customerId: new Types.ObjectId(createInteractionDto.customerId),
+          isFollowUpCompleted: false,
+          nextFollowUpDate: { $exists: true, $ne: null },
+        },
+        { isFollowUpCompleted: true },
+      );
+      await this.customersService.update(createInteractionDto.customerId, {
+        nextFollowUpAt: null,
       });
     }
 
