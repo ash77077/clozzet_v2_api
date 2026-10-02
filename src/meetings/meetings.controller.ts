@@ -41,6 +41,14 @@ export class MeetingsController {
     return { success: true, message: 'Meetings retrieved successfully', data };
   }
 
+  @Get('by-customer/:customerId')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.MANAGER)
+  async findByCustomer(@Param('customerId') customerId: string) {
+    const data = await this.meetingsService.findByCustomer(customerId);
+    return { success: true, message: 'Customer meetings retrieved successfully', data };
+  }
+
   @Get(':id')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.MANAGER)
@@ -49,20 +57,24 @@ export class MeetingsController {
     return { success: true, message: 'Meeting retrieved successfully', data };
   }
 
+  @Patch(':id/status')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.MANAGER)
+  async updateStatus(
+    @Param('id') id: string,
+    @Body('status') status: MeetingStatus,
+    @CurrentUser() currentUser: CurrentUserType,
+  ) {
+    const data = await this.meetingsService.updateStatus(id, status, currentUser.userId);
+    return { success: true, message: 'Meeting status updated', data };
+  }
+
   @Patch(':id')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.MANAGER)
   async update(@Param('id') id: string, @Body() updateData: Partial<CreateMeetingDto>) {
     const data = await this.meetingsService.update(id, updateData);
     return { success: true, message: 'Meeting updated successfully', data };
-  }
-
-  @Patch(':id/status')
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.MANAGER)
-  async updateStatus(@Param('id') id: string, @Body('status') status: MeetingStatus) {
-    const data = await this.meetingsService.updateStatus(id, status);
-    return { success: true, message: 'Meeting status updated', data };
   }
 
   @Delete(':id')

@@ -52,19 +52,7 @@ export class InteractionsService {
         nextFollowUpAt: createInteractionDto.nextFollowUpDate,
       });
     } else {
-      // No next follow-up chosen → mark any pending follow-up for this customer as done
-      // and clear the customer's nextFollowUpAt so it no longer appears overdue
-      await this.interactionModel.updateMany(
-        {
-          customerId: new Types.ObjectId(createInteractionDto.customerId),
-          isFollowUpCompleted: false,
-          nextFollowUpDate: { $exists: true, $ne: null },
-        },
-        { isFollowUpCompleted: true },
-      );
-      await this.customersService.update(createInteractionDto.customerId, {
-        nextFollowUpAt: null,
-      });
+      await this.clearFollowUpOverdue(createInteractionDto.customerId);
     }
 
     return savedInteraction;
@@ -123,6 +111,41 @@ export class InteractionsService {
     }
 
     return interaction;
+  }
+
+  async createInternal(data: {
+    customerId: string;
+    type: string;
+    summary: string;
+    subject?: string;
+    interactionDate?: Date;
+    createdByName?: string;
+    createdBy?: string;
+  }): Promise<void> {
+    const doc: any = {
+      customerId: new Types.ObjectId(data.customerId),
+      type: data.type,
+      summary: data.summary,
+      subject: data.subject,
+      interactionDate: data.interactionDate ?? new Date(),
+      isFollowUpCompleted: false,
+    };
+    if (data.createdBy) doc.createdBy = new Types.ObjectId(data.createdBy);
+    if (data.createdByName) doc.createdByName = data.createdByName;
+    await new this.interactionModel(doc).save();
+    await this.customersService.updateLastContacted(data.customerId);
+  }
+
+  async clearFollowUpOverdue(customerId: string): Promise<void> {
+    await this.interactionModel.updateMany(
+      {
+        customerId: new Types.ObjectId(customerId),
+        isFollowUpCompleted: false,
+        nextFollowUpDate: { $exists: true, $ne: null },
+      },
+      { isFollowUpCompleted: true },
+    );
+    await this.customersService.update(customerId, { nextFollowUpAt: null });
   }
 
   async markFollowUpCompleted(id: string): Promise<Interaction> {
