@@ -46,11 +46,13 @@ export class InteractionsService {
     // Update customer's last contacted date
     await this.customersService.updateLastContacted(createInteractionDto.customerId);
 
-    // Update next follow-up date if provided
+    // Update next follow-up date if provided; otherwise clear the overdue
     if (createInteractionDto.nextFollowUpDate) {
       await this.customersService.update(createInteractionDto.customerId, {
         nextFollowUpAt: createInteractionDto.nextFollowUpDate,
       });
+    } else {
+      await this.clearFollowUpOverdue(createInteractionDto.customerId);
     }
 
     return savedInteraction;
@@ -109,6 +111,41 @@ export class InteractionsService {
     }
 
     return interaction;
+  }
+
+  async createInternal(data: {
+    customerId: string;
+    type: string;
+    summary: string;
+    subject?: string;
+    interactionDate?: Date;
+    createdByName?: string;
+    createdBy?: string;
+  }): Promise<void> {
+    const doc: any = {
+      customerId: new Types.ObjectId(data.customerId),
+      type: data.type,
+      summary: data.summary,
+      subject: data.subject,
+      interactionDate: data.interactionDate ?? new Date(),
+      isFollowUpCompleted: false,
+    };
+    if (data.createdBy) doc.createdBy = new Types.ObjectId(data.createdBy);
+    if (data.createdByName) doc.createdByName = data.createdByName;
+    await new this.interactionModel(doc).save();
+    await this.customersService.updateLastContacted(data.customerId);
+  }
+
+  async clearFollowUpOverdue(customerId: string): Promise<void> {
+    await this.interactionModel.updateMany(
+      {
+        customerId: new Types.ObjectId(customerId),
+        isFollowUpCompleted: false,
+        nextFollowUpDate: { $exists: true, $ne: null },
+      },
+      { isFollowUpCompleted: true },
+    );
+    await this.customersService.update(customerId, { nextFollowUpAt: null });
   }
 
   async markFollowUpCompleted(id: string): Promise<Interaction> {
