@@ -49,7 +49,7 @@ export class ProductDetailsController {
   @UseInterceptors(FilesInterceptor('files', 20, multerConfig))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
-    summary: 'Upload design files',
+    summary: 'Upload design files.',
     description: 'Upload logo files, design files, and reference images for product details. Maximum 20 files, 50MB each.',
   })
   @ApiResponse({
