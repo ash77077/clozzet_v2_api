@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsDateString, IsNumber, IsEnum } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsDateString, IsNumber, IsEnum, IsBoolean, IsEmail } from 'class-validator';
 import { MeetingStatus } from '../schemas/meeting.schema';
 
 export class CreateMeetingDto {
@@ -40,4 +40,12 @@ export class CreateMeetingDto {
   @IsOptional()
   @IsString()
   customerId?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  inviteCustomer?: boolean;
+
+  @IsOptional()
+  @IsEmail()
+  customerEmail?: string;
 }

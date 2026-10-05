@@ -49,6 +49,9 @@ export class Meeting extends Document {
 
   @Prop({ type: Types.ObjectId, ref: 'Customer' })
   customerId?: Types.ObjectId;
+
+  @Prop()
+  googleEventId?: string;
 }
 
 export const MeetingSchema = SchemaFactory.createForClass(Meeting);
