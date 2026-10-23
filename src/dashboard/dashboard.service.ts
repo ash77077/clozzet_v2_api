@@ -134,7 +134,7 @@ export class DashboardService {
     const companies = await this.companyModel.find({ isActive: true }).exec();
     
     // For now, return companies sorted by creation date
-    // TODO: Add actual order counting when Order schema is implemented
+    // TODO: Add actual order counting when Order schema is implemented.
     return companies
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, limit)
