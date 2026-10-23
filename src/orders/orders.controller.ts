@@ -6,7 +6,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { SalesPersonsService } from '../sales-persons/sales-persons.service';
 import { ProductDetailsService } from '../product-details/product-details.service';
 
-@Controller('api/orders')
+@Controller('orders')
 export class OrdersController {
   constructor(
     private readonly telegramService: TelegramService,
