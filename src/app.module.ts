@@ -25,7 +25,6 @@ import { CustomersModule } from './customers/customers.module';
 import { InteractionsModule } from './interactions/interactions.module';
 import { AiModule } from './ai/ai.module';
 import { ExpoSalesModule } from './expo-sales/expo-sales.module';
-import { WeddingGuestsModule } from './wedding-guests/wedding-guests.module';
 import { EmployeesModule } from './employees/employees.module';
 import { MeetingsModule } from './meetings/meetings.module';
 import { ManagerKpiModule } from './manager-kpi/manager-kpi.module';
@@ -64,7 +63,6 @@ import { ManagerKpiModule } from './manager-kpi/manager-kpi.module';
     InteractionsModule,
     AiModule,
     ExpoSalesModule,
-    WeddingGuestsModule,
     EmployeesModule,
     MeetingsModule,
     ManagerKpiModule,
