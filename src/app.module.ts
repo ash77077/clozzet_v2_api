@@ -17,7 +17,6 @@ import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
 import { SalesPersonsModule } from './sales-persons/sales-persons.module';
 import { RetailProductsModule } from './retail-products/retail-products.module';
-import { FinancialProductionModule } from './financial-production/financial-production.module';
 import { SpecialCollectionModule } from './special-collection/special-collection.module';
 import { B2BOrdersModule } from './b2b-orders/b2b-orders.module';
 import { OrderRequestsModule } from './order-requests/order-requests.module';
@@ -57,7 +56,6 @@ import { ManagerKpiModule } from './manager-kpi/manager-kpi.module';
     OrdersModule,
     SalesPersonsModule,
     RetailProductsModule,
-    FinancialProductionModule,
     SpecialCollectionModule,
     B2BOrdersModule,
     OrderRequestsModule,
