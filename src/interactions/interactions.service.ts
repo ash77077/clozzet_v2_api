@@ -18,6 +18,7 @@ export class InteractionsService {
     createInteractionDto: CreateInteractionDto,
     userId?: string,
     createdByName?: string,
+    skipFollowUpUpdate = false,
   ): Promise<Interaction> {
     // Verify customer exists
     await this.customersService.findById(createInteractionDto.customerId);
@@ -47,12 +48,14 @@ export class InteractionsService {
     await this.customersService.updateLastContacted(createInteractionDto.customerId);
 
     // Update next follow-up date if provided; otherwise clear the overdue
-    if (createInteractionDto.nextFollowUpDate) {
-      await this.customersService.update(createInteractionDto.customerId, {
-        nextFollowUpAt: createInteractionDto.nextFollowUpDate,
-      });
-    } else {
-      await this.clearFollowUpOverdue(createInteractionDto.customerId);
+    if (!skipFollowUpUpdate) {
+      if (createInteractionDto.nextFollowUpDate) {
+        await this.customersService.update(createInteractionDto.customerId, {
+          nextFollowUpAt: createInteractionDto.nextFollowUpDate,
+        });
+      } else {
+        await this.clearFollowUpOverdue(createInteractionDto.customerId);
+      }
     }
 
     return savedInteraction;

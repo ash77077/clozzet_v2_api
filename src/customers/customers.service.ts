@@ -31,7 +31,9 @@ export class CustomersService {
     await customer.save();
 
     if (!skipAutoInteraction) {
-      // Creating a new lead manually counts as the first interaction
+      // Creating a new lead manually counts as the first interaction.
+      // Pass skipFollowUpUpdate=true so it doesn't overwrite nextFollowUpAt
+      // that was just saved with the customer.
       await this.interactionsService.create(
         {
           customerId: (customer as any)._id.toString(),
@@ -41,6 +43,8 @@ export class CustomersService {
           subject: 'Lead created',
         },
         userId,
+        undefined,
+        true,
       );
     }
 
