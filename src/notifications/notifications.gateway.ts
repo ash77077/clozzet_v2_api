@@ -12,7 +12,7 @@ import { Logger } from '@nestjs/common';
 
 @WebSocketGateway({
   cors: {
-    origin: ['http://localhost:4200', 'http://localhost:3000'],
+    origin: ['http://localhost:4200', 'http://localhost:3000', 'https://clozzet.am', 'https://www.clozzet.am'],
     credentials: true,
     methods: ['GET', 'POST'],
   },
