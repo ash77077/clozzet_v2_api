@@ -13,15 +13,15 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  // Security
-  app.use(helmet());
-
-  // CORS
+  // CORS — must be before helmet
   app.enableCors({
-    origin: ['http://localhost:4200', 'http://localhost:3000'],
+    origin: ['http://localhost:4200', 'http://localhost:3000', 'https://clozzet.am', 'https://www.clozzet.am'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
+
+  // Security
+  app.use(helmet({ crossOriginResourcePolicy: false }));
 
   // Global validation pipe
   app.useGlobalPipes(
