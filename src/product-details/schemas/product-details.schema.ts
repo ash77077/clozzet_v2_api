@@ -50,7 +50,16 @@ export class ProductDetails {
       sellingPricePerUnit: { type: Number },
       adultSellingPricePerUnit: { type: Number },
       childrenSellingPricePerUnit: { type: Number },
-      sizes: { type: MongooseSchema.Types.Mixed }
+      sizes: { type: MongooseSchema.Types.Mixed },
+      expenses: {
+        type: [{
+          name: { type: String },
+          quantity: { type: Number },
+          unit: { type: String },
+          pricePerUnit: { type: Number },
+        }],
+        default: [],
+      },
     }]
   })
   products?: Array<{
@@ -67,6 +76,7 @@ export class ProductDetails {
     adultSellingPricePerUnit?: number;
     childrenSellingPricePerUnit?: number;
     sizes?: Record<string, { men?: number; women?: number; uni?: number }>;
+    expenses?: Array<{ name?: string; quantity?: number; unit?: string; pricePerUnit?: number }>;
   }>;
 
   // Legacy fields for backward compatibility - kept for existing orders

@@ -2,6 +2,24 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsArray, IsOptional, IsNumber, Min, IsObject, IsEnum, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
+export class ExpenseItemDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsNumber()
+  quantity?: number;
+
+  @IsOptional()
+  @IsString()
+  unit?: string;
+
+  @IsOptional()
+  @IsNumber()
+  pricePerUnit?: number;
+}
+
 export class ProductItemDto {
   @ApiProperty({
     description: 'Type of cloth/product',
@@ -122,6 +140,12 @@ export class ProductItemDto {
   @IsOptional()
   @IsObject()
   sizes?: Record<string, { men?: number; women?: number; uni?: number }>;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ExpenseItemDto)
+  expenses?: ExpenseItemDto[];
 }
 
 export class CreateProductDetailsDto {
