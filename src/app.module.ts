@@ -28,6 +28,14 @@ import { ExpoSalesModule } from './expo-sales/expo-sales.module';
 import { EmployeesModule } from './employees/employees.module';
 import { MeetingsModule } from './meetings/meetings.module';
 import { ManagerKpiModule } from './manager-kpi/manager-kpi.module';
+import { ClothTypesModule } from './cloth-types/cloth-types.module';
+import { FabricTypesModule } from './fabric-types/fabric-types.module';
+import { ConsumptionTemplatesModule } from './consumption-templates/consumption-templates.module';
+import { FabricColorsModule } from './fabric-colors/fabric-colors.module';
+import { SuppliersModule } from './suppliers/suppliers.module';
+import { PurchasesModule } from './purchases/purchases.module';
+import { GlobalSettingsModule } from './global-settings/global-settings.module';
+import { ProductionNormsModule } from './production-norms/production-norms.module';
 
 @Module({
   imports: [
@@ -66,6 +74,14 @@ import { ManagerKpiModule } from './manager-kpi/manager-kpi.module';
     EmployeesModule,
     MeetingsModule,
     ManagerKpiModule,
+    ClothTypesModule,
+    FabricTypesModule,
+    ConsumptionTemplatesModule,
+    FabricColorsModule,
+    SuppliersModule,
+    PurchasesModule,
+    GlobalSettingsModule,
+    ProductionNormsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
