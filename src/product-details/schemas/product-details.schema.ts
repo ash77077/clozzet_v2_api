@@ -229,6 +229,16 @@ export class ProductDetails {
   // Used by the scheduler to ensure at most one notification per order per day.
   @Prop({ type: String })
   deadlineNotifiedDate?: string;
+
+  // Sales pipeline linkage — optional, non-breaking
+  @Prop({ type: String })
+  quoteId?: string;
+
+  @Prop({ type: String })
+  dealId?: string;
+
+  @Prop({ type: String })
+  quoteNumber?: string;
 }
 
 export const ProductDetailsSchema = SchemaFactory.createForClass(ProductDetails);

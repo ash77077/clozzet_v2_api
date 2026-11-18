@@ -36,6 +36,12 @@ import { SuppliersModule } from './suppliers/suppliers.module';
 import { PurchasesModule } from './purchases/purchases.module';
 import { GlobalSettingsModule } from './global-settings/global-settings.module';
 import { ProductionNormsModule } from './production-norms/production-norms.module';
+import { PipelineStagesModule } from './pipeline-stages/pipeline-stages.module';
+import { LostReasonsModule } from './lost-reasons/lost-reasons.module';
+import { DealsModule } from './deals/deals.module';
+import { DealStageHistoryModule } from './deal-stage-history/deal-stage-history.module';
+import { SalesSeederModule } from './sales-seeder/sales-seeder.module';
+import { MigrationModule } from './migration/migration.module';
 
 @Module({
   imports: [
@@ -82,6 +88,12 @@ import { ProductionNormsModule } from './production-norms/production-norms.modul
     PurchasesModule,
     GlobalSettingsModule,
     ProductionNormsModule,
+    PipelineStagesModule,
+    LostReasonsModule,
+    DealStageHistoryModule,
+    DealsModule,
+    SalesSeederModule,
+    MigrationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

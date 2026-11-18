@@ -40,8 +40,9 @@ export class ProductDetailsService {
       const createdProductDetails = new this.productDetailsModel(createProductDetailsDto);
       const savedProductDetails = await createdProductDetails.save();
 
-      // Send email notification to manufacturing team
-      await this.productDetailsEmailService.sendProductDetailsEmail(createProductDetailsDto);
+      // Send email notification to manufacturing team (non-blocking — don't fail the order if email fails)
+      this.productDetailsEmailService.sendProductDetailsEmail(createProductDetailsDto)
+        .catch(err => console.error('Failed to send manufacturing email:', err));
 
       return savedProductDetails.toObject();
     } catch (error) {

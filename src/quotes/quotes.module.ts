@@ -1,39 +1,29 @@
-import { Module } from '@nestjs/common';
+﻿import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { MailerModule } from '@nestjs-modules/mailer';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { QuotesController } from './quotes.controller';
 import { QuotesService } from './quotes.service';
-import { EmailService } from './email.service';
+import { QuotePdfService } from './pdf/quote-pdf.service';
+import { CounterService } from './counter.service';
 import { Quote, QuoteSchema } from './schemas/quote.schema';
+import { Counter, CounterSchema } from './schemas/counter.schema';
+import { UsersModule } from '../users/users.module';
+import { ProductDetailsModule } from '../product-details/product-details.module';
+import { DealsModule } from '../deals/deals.module';
+import { CustomersModule } from '../customers/customers.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Quote.name, schema: QuoteSchema }]),
-    MailerModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        transport: {
-          host: configService.get<string>('SMTP_HOST', 'smtp.gmail.com'),
-          port: configService.get<number>('SMTP_PORT', 587),
-          secure: false, // true for 465, false for other ports
-          auth: {
-            user: configService.get<string>('SMTP_USER'),
-            pass: configService.get<string>('SMTP_PASS'),
-          },
-          tls: {
-            rejectUnauthorized: false,
-          },
-        },
-        defaults: {
-          from: `"CLOZZET Quote System" <${configService.get<string>('SMTP_FROM', 'noreply@clozzet.am')}>`,
-        },
-      }),
-      inject: [ConfigService],
-    }),
+    MongooseModule.forFeature([
+      { name: Quote.name, schema: QuoteSchema },
+      { name: Counter.name, schema: CounterSchema },
+    ]),
+    UsersModule,
+    ProductDetailsModule,
+    DealsModule,
+    CustomersModule,
   ],
   controllers: [QuotesController],
-  providers: [QuotesService, EmailService],
+  providers: [QuotesService, QuotePdfService, CounterService],
   exports: [QuotesService],
 })
 export class QuotesModule {}
